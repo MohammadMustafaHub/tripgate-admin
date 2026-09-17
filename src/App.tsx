@@ -1,65 +1,56 @@
-import { useState } from 'react'
-import {
-  Pagination,
-  PaginationContent,
-  PaginationEllipsis,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from './components/ui/pagination'
+import { Navigate, Route, Routes } from 'react-router';
 
-const TOTAL_PAGES = 10
+import { AuthLayout } from '@/layouts/auth-layout';
+import { DashboardLayout } from '@/layouts/dashboard-layout';
+import { ForgotPasswordView } from '@/pages/auth/forgot-password/view';
+import { LoginView } from '@/pages/auth/login/view';
+import { RegisterView } from '@/pages/auth/register/view';
+import { VerifyPhoneView } from '@/pages/auth/verify-phone/view';
+import { DashboardView } from '@/pages/dashboard/view';
+import { CreateTenantView } from '@/pages/tenant/create/view';
+import {
+  RequireAuth,
+  RequireConfirmedPhone,
+  RequireGuest,
+  RequireTenant,
+} from '@/routes/guards';
 
 function App() {
-  const [page, setPage] = useState(1)
-
-  const go = (to: number) => (event: React.MouseEvent) => {
-    event.preventDefault()
-    setPage(Math.min(Math.max(to, 1), TOTAL_PAGES))
-  }
-
   return (
-    <div className="flex min-h-svh flex-col items-center justify-center gap-6 p-8">
-      <p className="text-sm text-muted-foreground">
-        الصفحة {page} من {TOTAL_PAGES}
-      </p>
+    <Routes>
+      {/* Signed out only */}
+      <Route element={<RequireGuest />}>
+        <Route element={<AuthLayout />}>
+          <Route path="login" element={<LoginView />} />
+          <Route path="register" element={<RegisterView />} />
+          <Route path="forgot-password" element={<ForgotPasswordView />} />
+        </Route>
+      </Route>
 
-      <Pagination>
-        <PaginationContent>
-          <PaginationItem>
-            <PaginationPrevious href="#" text="السابق" onClick={go(page - 1)} />
-          </PaginationItem>
+      {/* Signed in only */}
+      <Route element={<RequireAuth />}>
+        {/* Reachable before the phone is confirmed — it is what confirms it */}
+        <Route element={<AuthLayout />}>
+          <Route path="verify-phone" element={<VerifyPhoneView />} />
+        </Route>
 
-          {[1, 2, 3].map((n) => (
-            <PaginationItem key={n}>
-              <PaginationLink href="#" isActive={page === n} onClick={go(n)}>
-                {n}
-              </PaginationLink>
-            </PaginationItem>
-          ))}
+        <Route element={<RequireConfirmedPhone />}>
+          {/* Onboarding step for an account that has no tenant yet */}
+          <Route element={<AuthLayout />}>
+            <Route path="create-tenant" element={<CreateTenantView />} />
+          </Route>
 
-          <PaginationItem>
-            <PaginationEllipsis />
-          </PaginationItem>
+          <Route element={<RequireTenant />}>
+            <Route element={<DashboardLayout />}>
+              <Route index element={<DashboardView />} />
+            </Route>
+          </Route>
+        </Route>
+      </Route>
 
-          <PaginationItem>
-            <PaginationLink
-              href="#"
-              isActive={page === TOTAL_PAGES}
-              onClick={go(TOTAL_PAGES)}
-            >
-              {TOTAL_PAGES}
-            </PaginationLink>
-          </PaginationItem>
-
-          <PaginationItem>
-            <PaginationNext href="#" text="التالي" onClick={go(page + 1)} />
-          </PaginationItem>
-        </PaginationContent>
-      </Pagination>
-    </div>
-  )
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
+  );
 }
 
-export default App
+export default App;

@@ -1,32 +1,89 @@
-# React + TypeScript + Vite
+# TripGate Admin
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+The React admin panel for **TripGate**, a travel-management SaaS platform. It is the
+internal back-office UI used to manage the platform's tenants, bookings and content.
 
-Currently, two official plugins are available:
+The interface is built **RTL-first** — the shadcn/ui component library in
+`src/components/ui` has been migrated to logical properties (`ps`/`pe`, `start`/`end`)
+and `rtl:` variants, and the document is served with `dir="rtl"`.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Index
 
-## React Compiler
+- [Tech stack](#tech-stack)
+- [Requirements](#requirements)
+- [Setup](#setup)
+- [Commands](#commands)
+- [Project structure](#project-structure)
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Tech stack
 
-## Expanding the Oxlint configuration
+| Concern    | Choice                          |
+| ---------- | ------------------------------- |
+| Framework  | React 19                        |
+| Build tool | Vite 8                          |
+| Language   | TypeScript                      |
+| Styling    | Tailwind CSS 4                  |
+| Components | shadcn/ui on Base UI primitives |
+| Icons      | lucide-react                    |
+| Charts     | Recharts                        |
+| Linting    | Oxlint                          |
 
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
+## Requirements
 
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
+- Node.js 20.19+ (or 22.12+)
+- npm
+
+## Setup
+
+```bash
+git clone <repository-url>
+cd admin
+npm install
 ```
 
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+Then start the dev server:
+
+```bash
+npm run dev
+```
+
+The app is served at `http://localhost:5173`.
+
+## Commands
+
+| Command           | What it does                                              |
+| ----------------- | --------------------------------------------------------- |
+| `npm run dev`     | Start the Vite dev server with HMR                         |
+| `npm run build`   | Type-check (`tsc -b`) and build the production bundle to `dist/` |
+| `npm run preview` | Serve the built `dist/` bundle locally                     |
+| `npm run lint`    | Run Oxlint over the project                                |
+
+To produce and verify a production build:
+
+```bash
+npm run build
+npm run preview
+```
+
+Adding a shadcn component:
+
+```bash
+npx shadcn@latest add <component>
+```
+
+New components land in `src/components/ui` in LTR form — check them for hardcoded
+directional styles (physical `left`/`right`, `translate-x`, directional chevrons)
+before using them.
+
+## Project structure
+
+```
+src/
+├── components/ui/   shadcn/ui components, migrated to RTL
+├── hooks/           shared React hooks
+├── lib/             utilities and helpers
+├── assets/          static assets
+├── index.css        Tailwind entry and theme tokens
+├── App.tsx          root component
+└── main.tsx         application entry point
+```

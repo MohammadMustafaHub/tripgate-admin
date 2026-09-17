@@ -1,0 +1,1305 @@
+openapi: 3.1.1
+info:
+  title: Api | v1
+  version: 1.0.0
+servers:
+  - url: http://localhost:5134/
+paths:
+  /api/trips/TripPrograms:
+    post:
+      tags:
+        - TripPrograms
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateTripProgramRequest"
+          text/json:
+            schema:
+              $ref: "#/components/schemas/CreateTripProgramRequest"
+          application/*+json:
+            schema:
+              $ref: "#/components/schemas/CreateTripProgramRequest"
+        required: true
+      responses:
+        "201":
+          description: Created
+          content:
+            text/plain:
+              schema:
+                $ref: "#/components/schemas/SuccessOfTripProgramResponse"
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessOfTripProgramResponse"
+            text/json:
+              schema:
+                $ref: "#/components/schemas/SuccessOfTripProgramResponse"
+        "400":
+          description: The program details are invalid.
+          content:
+            text/plain:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+    get:
+      tags:
+        - TripPrograms
+      parameters:
+        - name: page
+          in: query
+          schema:
+            pattern: ^-?(?:0|[1-9]\d*)$
+            type:
+              - integer
+              - string
+            format: int32
+            default: 1
+        - name: pageSize
+          in: query
+          schema:
+            pattern: ^-?(?:0|[1-9]\d*)$
+            type:
+              - integer
+              - string
+            format: int32
+            default: 20
+      responses:
+        "200":
+          description: OK
+          content:
+            text/plain:
+              schema:
+                $ref: "#/components/schemas/PaginatedOfTripProgramResponse"
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaginatedOfTripProgramResponse"
+            text/json:
+              schema:
+                $ref: "#/components/schemas/PaginatedOfTripProgramResponse"
+  /api/trips/TripPrograms/{id}:
+    get:
+      tags:
+        - TripPrograms
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: OK
+          content:
+            text/plain:
+              schema:
+                $ref: "#/components/schemas/SuccessOfTripProgramResponse"
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessOfTripProgramResponse"
+            text/json:
+              schema:
+                $ref: "#/components/schemas/SuccessOfTripProgramResponse"
+        "404":
+          description: No such program in this tenant.
+          content:
+            text/plain:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+    put:
+      tags:
+        - TripPrograms
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateTripProgramRequest"
+          text/json:
+            schema:
+              $ref: "#/components/schemas/UpdateTripProgramRequest"
+          application/*+json:
+            schema:
+              $ref: "#/components/schemas/UpdateTripProgramRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            text/plain:
+              schema:
+                $ref: "#/components/schemas/SuccessOfTripProgramResponse"
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessOfTripProgramResponse"
+            text/json:
+              schema:
+                $ref: "#/components/schemas/SuccessOfTripProgramResponse"
+        "400":
+          description: The program details are invalid.
+          content:
+            text/plain:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+        "404":
+          description: No such program in this tenant.
+          content:
+            text/plain:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+    delete:
+      tags:
+        - TripPrograms
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "204":
+          description: No Content
+        "404":
+          description: No such program in this tenant.
+          content:
+            text/plain:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+        "409":
+          description: The program still has trips scheduled from it.
+          content:
+            text/plain:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+  /api/tenancy/Tenants:
+    post:
+      tags:
+        - Tenants
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateTenantRequest"
+          text/json:
+            schema:
+              $ref: "#/components/schemas/CreateTenantRequest"
+          application/*+json:
+            schema:
+              $ref: "#/components/schemas/CreateTenantRequest"
+        required: true
+      responses:
+        "201":
+          description: Created
+          content:
+            text/plain:
+              schema:
+                $ref: "#/components/schemas/SuccessOfTenantResponse"
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessOfTenantResponse"
+            text/json:
+              schema:
+                $ref: "#/components/schemas/SuccessOfTenantResponse"
+        "400":
+          description: The user already has a tenant.
+          content:
+            text/plain:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+        "409":
+          description: The subdomain is already taken.
+          content:
+            text/plain:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+    get:
+      tags:
+        - Tenants
+      responses:
+        "200":
+          description: OK
+          content:
+            text/plain:
+              schema:
+                $ref: "#/components/schemas/SuccessOfTenantResponse"
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessOfTenantResponse"
+            text/json:
+              schema:
+                $ref: "#/components/schemas/SuccessOfTenantResponse"
+        "404":
+          description: The user does not belong to a tenant.
+          content:
+            text/plain:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+  /api/auth/Password/change:
+    post:
+      tags:
+        - Password
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ChangePasswordRequest"
+          text/json:
+            schema:
+              $ref: "#/components/schemas/ChangePasswordRequest"
+          application/*+json:
+            schema:
+              $ref: "#/components/schemas/ChangePasswordRequest"
+        required: true
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Current password is wrong, or the new password was rejected by the
+            password policy.
+          content:
+            text/plain:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+  /api/auth/Password/forgot:
+    post:
+      tags:
+        - Password
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ForgotPasswordRequest"
+          text/json:
+            schema:
+              $ref: "#/components/schemas/ForgotPasswordRequest"
+          application/*+json:
+            schema:
+              $ref: "#/components/schemas/ForgotPasswordRequest"
+        required: true
+      responses:
+        "204":
+          description: No Content
+        "429":
+          description: The SMS provider refused the send. Wait before requesting another
+            code.
+          content:
+            text/plain:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+  /api/auth/Password/verify-code:
+    post:
+      tags:
+        - Password
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/VerifyPasswordCodeRequest"
+          text/json:
+            schema:
+              $ref: "#/components/schemas/VerifyPasswordCodeRequest"
+          application/*+json:
+            schema:
+              $ref: "#/components/schemas/VerifyPasswordCodeRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            text/plain:
+              schema:
+                $ref: "#/components/schemas/SuccessOfPasswordResetTokenResponse"
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessOfPasswordResetTokenResponse"
+            text/json:
+              schema:
+                $ref: "#/components/schemas/SuccessOfPasswordResetTokenResponse"
+        "400":
+          description: Code does not match the one issued, or it has expired.
+          content:
+            text/plain:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+  /api/auth/Password/reset:
+    post:
+      tags:
+        - Password
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ResetPasswordRequest"
+          text/json:
+            schema:
+              $ref: "#/components/schemas/ResetPasswordRequest"
+          application/*+json:
+            schema:
+              $ref: "#/components/schemas/ResetPasswordRequest"
+        required: true
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Reset token is invalid or spent, or the new password was rejected
+            by the password policy.
+          content:
+            text/plain:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+  /api/auth/register:
+    post:
+      tags:
+        - Registration
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegisterRequest"
+          text/json:
+            schema:
+              $ref: "#/components/schemas/RegisterRequest"
+          application/*+json:
+            schema:
+              $ref: "#/components/schemas/RegisterRequest"
+        required: true
+      responses:
+        "201":
+          description: Created
+          content:
+            text/plain:
+              schema:
+                $ref: "#/components/schemas/SuccessOfTokenResponse"
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessOfTokenResponse"
+            text/json:
+              schema:
+                $ref: "#/components/schemas/SuccessOfTokenResponse"
+        "409":
+          description: Phone number already registered.
+          content:
+            text/plain:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+  /api/auth/login:
+    post:
+      tags:
+        - Registration
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginRequest"
+          text/json:
+            schema:
+              $ref: "#/components/schemas/LoginRequest"
+          application/*+json:
+            schema:
+              $ref: "#/components/schemas/LoginRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            text/plain:
+              schema:
+                $ref: "#/components/schemas/SuccessOfTokenResponse"
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessOfTokenResponse"
+            text/json:
+              schema:
+                $ref: "#/components/schemas/SuccessOfTokenResponse"
+        "401":
+          description: Unknown phone number or wrong password.
+          content:
+            text/plain:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+        "423":
+          description: Account locked due to multiple failed logins.
+          content:
+            text/plain:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+  /api/auth/Tokens/refresh:
+    post:
+      tags:
+        - Tokens
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RefreshTokenRequest"
+          text/json:
+            schema:
+              $ref: "#/components/schemas/RefreshTokenRequest"
+          application/*+json:
+            schema:
+              $ref: "#/components/schemas/RefreshTokenRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            text/plain:
+              schema:
+                $ref: "#/components/schemas/SuccessOfTokenResponse"
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessOfTokenResponse"
+            text/json:
+              schema:
+                $ref: "#/components/schemas/SuccessOfTokenResponse"
+        "401":
+          description: Refresh token is unknown, already used or expired.
+          content:
+            text/plain:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+  /api/auth/Tokens/revoke:
+    post:
+      tags:
+        - Tokens
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RefreshTokenRequest"
+          text/json:
+            schema:
+              $ref: "#/components/schemas/RefreshTokenRequest"
+          application/*+json:
+            schema:
+              $ref: "#/components/schemas/RefreshTokenRequest"
+        required: true
+      responses:
+        "204":
+          description: No Content
+        "404":
+          description: Refresh token was not found, so there was nothing to revoke.
+          content:
+            text/plain:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+  /api/auth/Tokens/revoke-all:
+    post:
+      tags:
+        - Tokens
+      responses:
+        "204":
+          description: No Content
+  /api/auth/Users/me:
+    get:
+      tags:
+        - Users
+      responses:
+        "200":
+          description: OK
+          content:
+            text/plain:
+              schema:
+                $ref: "#/components/schemas/SuccessOfUserResponse"
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessOfUserResponse"
+            text/json:
+              schema:
+                $ref: "#/components/schemas/SuccessOfUserResponse"
+  /api/auth/Verification/send-code:
+    post:
+      tags:
+        - Verification
+      responses:
+        "204":
+          description: No Content
+        "409":
+          description: Phone number is already confirmed.
+          content:
+            text/plain:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+        "429":
+          description: The SMS provider refused the send. Wait before requesting another
+            code.
+          content:
+            text/plain:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+  /api/auth/Verification/verify:
+    post:
+      tags:
+        - Verification
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/VerifyCodeRequest"
+          text/json:
+            schema:
+              $ref: "#/components/schemas/VerifyCodeRequest"
+          application/*+json:
+            schema:
+              $ref: "#/components/schemas/VerifyCodeRequest"
+        required: true
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Code does not match the one issued, or it has expired.
+          content:
+            text/plain:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+components:
+  schemas:
+    ChangePasswordRequest:
+      required:
+        - currentPassword
+        - newPassword
+      type: object
+      properties:
+        currentPassword:
+          type: string
+          description: The password currently on the account.
+        newPassword:
+          minLength: 8
+          type: string
+          description: The replacement password. Must be at least 8 characters.
+      description: Changes the password of the signed in account.
+    CreateTenantRequest:
+      required:
+        - name
+        - subdomain
+      type: object
+      properties:
+        name:
+          maxLength: 100
+          type: string
+          description: Display name of the tenant.
+        subdomain:
+          type: string
+          description: Subdomain the tenant is reached under, e.g. "acme".
+      description: Details for creating a tenant.
+    CreateTripProgramRequest:
+      required:
+        - name
+        - description
+        - destination
+        - defaultPricePerSeat
+        - defaultSeatCount
+        - numberOfDays
+        - transferMethod
+        - includesHotel
+        - coverImage
+        - images
+        - steps
+      type: object
+      properties:
+        name:
+          maxLength: 150
+          type: string
+          description: Display name of the program.
+        description:
+          maxLength: 4000
+          type: string
+          description: What the program covers.
+        destination:
+          description: Whether the program stays in country or crosses a border.
+          $ref: "#/components/schemas/TripDestination"
+        defaultPricePerSeat:
+          pattern: ^-?(?:0|[1-9]\d*)(?:\.\d+)?$
+          type:
+            - number
+            - string
+          description: Price per seat trips inherit unless they override it.
+          format: double
+        defaultSeatCount:
+          pattern: ^-?(?:0|[1-9]\d*)$
+          type:
+            - integer
+            - string
+          description: Seat count trips inherit unless they override it.
+          format: int32
+        numberOfDays:
+          pattern: ^-?(?:0|[1-9]\d*)$
+          type:
+            - integer
+            - string
+          description: How many days the program runs.
+          format: int32
+        transferMethod:
+          maxLength: 100
+          type: string
+          description: How travellers are moved, e.g. "Bus".
+        includesHotel:
+          type: boolean
+          description: Whether a hotel is included.
+        coverImage:
+          maxLength: 2048
+          type:
+            - "null"
+            - string
+          description: Main image for the program.
+        images:
+          maxLength: 2048
+          type:
+            - "null"
+            - array
+          items:
+            type: string
+          description: Additional images for the program.
+        steps:
+          type:
+            - "null"
+            - array
+          items:
+            $ref: "#/components/schemas/TripProgramStepRequest"
+          description: Day-by-day itinerary. Ranges must not overlap.
+      description: Details for creating a trip program.
+    ForgotPasswordRequest:
+      required:
+        - phoneNumber
+      type: object
+      properties:
+        phoneNumber:
+          pattern: ^9647\d{9}$
+          type: string
+          description: Iraqi phone number in the format 9647XXXXXXXXX.
+      description: Starts the forgot password flow for a phone number.
+    LoginRequest:
+      required:
+        - phoneNumber
+        - password
+      type: object
+      properties:
+        phoneNumber:
+          pattern: ^9647\d{9}$
+          type: string
+          description: Iraqi phone number in the format 9647XXXXXXXXX.
+        password:
+          type: string
+          description: Account password.
+      description: Credentials for signing in to an existing account.
+    PaginatedOfTripProgramResponse:
+      required:
+        - data
+        - pagination
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/TripProgramResponse"
+        pagination:
+          $ref: "#/components/schemas/PaginationData"
+        isSuccessful:
+          type: boolean
+    PaginationData:
+      required:
+        - page
+        - pageSize
+        - totalItems
+      type: object
+      properties:
+        page:
+          pattern: ^-?(?:0|[1-9]\d*)$
+          type:
+            - integer
+            - string
+          format: int32
+        pageSize:
+          pattern: ^-?(?:0|[1-9]\d*)$
+          type:
+            - integer
+            - string
+          format: int32
+        totalItems:
+          pattern: ^-?(?:0|[1-9]\d*)$
+          type:
+            - integer
+            - string
+          format: int32
+        totalPages:
+          pattern: ^-?(?:0|[1-9]\d*)$
+          type:
+            - integer
+            - string
+          format: int32
+        hasNextPage:
+          type: boolean
+        hasPreviousPage:
+          type: boolean
+    PasswordResetTokenResponse:
+      required:
+        - token
+      type: object
+      properties:
+        token:
+          type: string
+          description: Identity password reset token.
+      description: Proof of phone number ownership, spent by the reset password step.
+    ProblemDetails:
+      type: object
+      properties:
+        type:
+          type:
+            - "null"
+            - string
+        title:
+          type:
+            - "null"
+            - string
+        status:
+          pattern: ^-?(?:0|[1-9]\d*)$
+          type:
+            - "null"
+            - integer
+            - string
+          format: int32
+        detail:
+          type:
+            - "null"
+            - string
+        instance:
+          type:
+            - "null"
+            - string
+    RefreshTokenRequest:
+      required:
+        - refreshToken
+      type: object
+      properties:
+        refreshToken:
+          type: string
+          description: The refresh token to act on.
+      description: Carries a refresh token issued by register, login or refresh.
+    RegisterRequest:
+      required:
+        - phoneNumber
+        - password
+      type: object
+      properties:
+        phoneNumber:
+          pattern: ^9647\d{9}$
+          type: string
+          description: Iraqi phone number in the format 9647XXXXXXXXX.
+        password:
+          minLength: 8
+          type: string
+          description: Account password. Must be at least 8 characters.
+      description: Credentials for creating a new account.
+    ResetPasswordRequest:
+      required:
+        - phoneNumber
+        - token
+        - newPassword
+      type: object
+      properties:
+        phoneNumber:
+          pattern: ^9647\d{9}$
+          type: string
+          description: Iraqi phone number in the format 9647XXXXXXXXX.
+        token:
+          type: string
+          description: Reset token returned by the verify code step.
+        newPassword:
+          minLength: 8
+          type: string
+          description: The replacement password. Must be at least 8 characters.
+      description: Sets a new password using a password reset token.
+    SubscriptionPlan:
+      enum:
+        - Free
+        - Pro
+      description: The plan the tenant is currently on.
+    SuccessOfPasswordResetTokenResponse:
+      required:
+        - data
+      type: object
+      properties:
+        data:
+          oneOf:
+            - type: "null"
+            - $ref: "#/components/schemas/PasswordResetTokenResponse"
+        isSuccessful:
+          type: boolean
+    SuccessOfTenantResponse:
+      required:
+        - data
+      type: object
+      properties:
+        data:
+          oneOf:
+            - type: "null"
+            - $ref: "#/components/schemas/TenantResponse"
+        isSuccessful:
+          type: boolean
+    SuccessOfTokenResponse:
+      required:
+        - data
+      type: object
+      properties:
+        data:
+          oneOf:
+            - type: "null"
+            - $ref: "#/components/schemas/TokenResponse"
+        isSuccessful:
+          type: boolean
+    SuccessOfTripProgramResponse:
+      required:
+        - data
+      type: object
+      properties:
+        data:
+          oneOf:
+            - type: "null"
+            - $ref: "#/components/schemas/TripProgramResponse"
+        isSuccessful:
+          type: boolean
+    SuccessOfUserResponse:
+      required:
+        - data
+      type: object
+      properties:
+        data:
+          oneOf:
+            - type: "null"
+            - $ref: "#/components/schemas/UserResponse"
+        isSuccessful:
+          type: boolean
+    TenantResponse:
+      required:
+        - id
+        - name
+        - subdomain
+        - status
+        - plan
+        - joinedAt
+        - subscribedAt
+        - expiresAt
+      type: object
+      properties:
+        id:
+          type: string
+          description: Identifier of the tenant.
+          format: uuid
+        name:
+          type: string
+          description: Display name of the tenant.
+        subdomain:
+          type: string
+          description: Subdomain the tenant is reached under.
+        status:
+          description: Whether the tenant is active or suspended.
+          $ref: "#/components/schemas/TenantStatus"
+        plan:
+          description: The plan the tenant is currently on.
+          $ref: "#/components/schemas/SubscriptionPlan"
+        joinedAt:
+          type: string
+          description: When the tenant was created.
+          format: date-time
+        subscribedAt:
+          type: string
+          description: When the current plan started.
+          format: date-time
+        expiresAt:
+          type: string
+          description: When the current plan lapses.
+          format: date-time
+      description: A tenant and its current subscription.
+    TenantStatus:
+      enum:
+        - Active
+        - Suspended
+      description: Whether the tenant is active or suspended.
+    TokenResponse:
+      required:
+        - accessToken
+        - refreshToken
+      type: object
+      properties:
+        accessToken:
+          type: string
+          description: Short-lived bearer token for calling the API.
+        refreshToken:
+          type: string
+          description: Long-lived token used to obtain a new access token. Shown once.
+      description: The token pair issued to a signed-in client.
+    TripDestination:
+      enum:
+        - Domestic
+        - International
+      description: Whether the program stays in country or crosses a border.
+    TripProgramResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Identifier of the program.
+          format: uuid
+        name:
+          type:
+            - "null"
+            - string
+          description: Display name of the program.
+        description:
+          type:
+            - "null"
+            - string
+          description: What the program covers.
+        destination:
+          description: Whether the program stays in country or crosses a border.
+          $ref: "#/components/schemas/TripDestination"
+        defaultPricePerSeat:
+          pattern: ^-?(?:0|[1-9]\d*)(?:\.\d+)?$
+          type:
+            - number
+            - string
+          description: Price per seat trips inherit unless they override it.
+          format: double
+        defaultSeatCount:
+          pattern: ^-?(?:0|[1-9]\d*)$
+          type:
+            - integer
+            - string
+          description: Seat count trips inherit unless they override it.
+          format: int32
+        numberOfDays:
+          pattern: ^-?(?:0|[1-9]\d*)$
+          type:
+            - integer
+            - string
+          description: How many days the program runs.
+          format: int32
+        transferMethod:
+          type:
+            - "null"
+            - string
+          description: How travellers are moved.
+        includesHotel:
+          type: boolean
+          description: Whether a hotel is included.
+        coverImage:
+          type:
+            - "null"
+            - string
+          description: Main image for the program.
+        images:
+          type:
+            - "null"
+            - array
+          items:
+            type: string
+          description: Additional images for the program.
+        steps:
+          type:
+            - "null"
+            - array
+          items:
+            $ref: "#/components/schemas/TripProgramStepResponse"
+          description: Day-by-day itinerary, ordered by starting day.
+        createdAt:
+          type: string
+          description: When the program was created.
+          format: date-time
+        updatedAt:
+          type: string
+          description: When the program was last changed.
+          format: date-time
+      description: A reusable template that trips are scheduled from.
+    TripProgramStepRequest:
+      required:
+        - fromDay
+        - toDay
+        - description
+      type: object
+      properties:
+        fromDay:
+          pattern: ^-?(?:0|[1-9]\d*)$
+          type:
+            - integer
+            - string
+          description: First day of the range, counting from 1.
+          format: int32
+        toDay:
+          pattern: ^-?(?:0|[1-9]\d*)$
+          type:
+            - integer
+            - string
+          description: Last day of the range, inclusive.
+          format: int32
+        description:
+          maxLength: 1000
+          type: string
+          description: What the travellers do during these days.
+      description: A range of days within the program and what happens during it.
+    TripProgramStepResponse:
+      type: object
+      properties:
+        fromDay:
+          pattern: ^-?(?:0|[1-9]\d*)$
+          type:
+            - integer
+            - string
+          description: First day of the range, counting from 1.
+          format: int32
+        toDay:
+          pattern: ^-?(?:0|[1-9]\d*)$
+          type:
+            - integer
+            - string
+          description: Last day of the range, inclusive.
+          format: int32
+        description:
+          type:
+            - "null"
+            - string
+          description: What the travellers do during these days.
+      description: A range of days within the program and what happens during it.
+    UpdateTripProgramRequest:
+      required:
+        - name
+        - description
+        - transferMethod
+        - includesHotel
+        - coverImage
+        - images
+        - steps
+      type: object
+      properties:
+        name:
+          maxLength: 150
+          type: string
+          description: Display name of the program.
+        description:
+          maxLength: 4000
+          type: string
+          description: What the program covers.
+        transferMethod:
+          maxLength: 100
+          type: string
+          description: How travellers are moved, e.g. "Bus".
+        includesHotel:
+          type: boolean
+          description: Whether a hotel is included.
+        coverImage:
+          maxLength: 2048
+          type:
+            - "null"
+            - string
+          description: Main image for the program.
+        images:
+          maxLength: 2048
+          type:
+            - "null"
+            - array
+          items:
+            type: string
+          description: Replaces the program's images.
+        steps:
+          type:
+            - "null"
+            - array
+          items:
+            $ref: "#/components/schemas/TripProgramStepRequest"
+          description: Replaces the program's itinerary. Ranges must not overlap.
+      description: Fields of a trip program that can be changed after creation.
+    UserResponse:
+      required:
+        - id
+        - phoneNumber
+        - phoneNumberConfirmed
+        - roles
+      type: object
+      properties:
+        id:
+          type: string
+          description: Identifier of the user.
+          format: uuid
+        phoneNumber:
+          type: string
+          description: Iraqi phone number the account is registered under.
+        phoneNumberConfirmed:
+          type: boolean
+          description: Whether the phone number is confirmed.
+        roles:
+          type: array
+          items:
+            type: string
+          description: Role names held by the user.
+      description: The signed-in user's account details.
+    VerifyCodeRequest:
+      required:
+        - code
+      type: object
+      properties:
+        code:
+          pattern: ^\d{6}$
+          type: string
+          description: Six digit verification code.
+      description: The verification code sent to the account's phone number.
+    VerifyPasswordCodeRequest:
+      required:
+        - phoneNumber
+        - code
+      type: object
+      properties:
+        phoneNumber:
+          pattern: ^9647\d{9}$
+          type: string
+          description: Iraqi phone number in the format 9647XXXXXXXXX.
+        code:
+          pattern: ^\d{6}$
+          type: string
+          description: Six digit code sent to the phone number.
+      description: Exchanges a verification code for a password reset token.
+  securitySchemes:
+    Bearer:
+      type: http
+      scheme: bearer
+      bearerFormat: JSON Web Token
+security:
+  - Bearer: []
+tags:
+  - name: TripPrograms
+  - name: Tenants
+  - name: Password
+  - name: Registration
+  - name: Tokens
+  - name: Users
+  - name: Verification
