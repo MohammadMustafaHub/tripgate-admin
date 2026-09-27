@@ -1,65 +1,52 @@
-import { useState } from 'react'
-import {
-  Pagination,
-  PaginationContent,
-  PaginationEllipsis,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from './components/ui/pagination'
+import { BrowserRouter, Navigate, Route, Routes } from "react-router";
+import { AuthGuard, GuestGuard, SessionGuard } from "@/guards/auth-guard";
+import { AuthLayout } from "@/layouts/auth";
+import { DashboardLayout } from "@/layouts/dashboard";
+import CreateTenantPage from "@/pages/auth/create-tenant";
+import ForgotPasswordPage from "@/pages/auth/forgot-password";
+import LoginPage from "@/pages/auth/login";
+import RegisterPage from "@/pages/auth/register";
+import VerifyPage from "@/pages/auth/verify";
+import DashboardView from "@/pages/dashboard/view";
+import PlaceholderPage from "@/pages/placeholder";
 
-const TOTAL_PAGES = 10
-
-function App() {
-  const [page, setPage] = useState(1)
-
-  const go = (to: number) => (event: React.MouseEvent) => {
-    event.preventDefault()
-    setPage(Math.min(Math.max(to, 1), TOTAL_PAGES))
-  }
-
+export default function App() {
   return (
-    <div className="flex min-h-svh flex-col items-center justify-center gap-6 p-8">
-      <p className="text-sm text-muted-foreground">
-        الصفحة {page} من {TOTAL_PAGES}
-      </p>
+    <BrowserRouter>
+      <Routes>
+        <Route element={<SessionGuard />}>
+          <Route element={<GuestGuard />}>
+            <Route element={<AuthLayout />}>
+              <Route path="login" element={<LoginPage />} />
+              <Route path="register" element={<RegisterPage />} />
+              <Route path="forgot-password" element={<ForgotPasswordPage />} />
+            </Route>
+          </Route>
 
-      <Pagination>
-        <PaginationContent>
-          <PaginationItem>
-            <PaginationPrevious href="#" text="السابق" onClick={go(page - 1)} />
-          </PaginationItem>
+          <Route element={<AuthGuard step="verify" />}>
+            <Route element={<AuthLayout />}>
+              <Route path="verify" element={<VerifyPage />} />
+            </Route>
+          </Route>
 
-          {[1, 2, 3].map((n) => (
-            <PaginationItem key={n}>
-              <PaginationLink href="#" isActive={page === n} onClick={go(n)}>
-                {n}
-              </PaginationLink>
-            </PaginationItem>
-          ))}
+          <Route element={<AuthGuard step="tenant" />}>
+            <Route element={<AuthLayout />}>
+              <Route path="create-tenant" element={<CreateTenantPage />} />
+            </Route>
+          </Route>
 
-          <PaginationItem>
-            <PaginationEllipsis />
-          </PaginationItem>
+          <Route element={<AuthGuard step="ready" />}>
+            <Route element={<DashboardLayout />}>
+              <Route index element={<DashboardView />} />
+              <Route path="trip-programs" element={<PlaceholderPage />} />
+              <Route path="settings/tenant" element={<PlaceholderPage />} />
+              <Route path="settings/account" element={<PlaceholderPage />} />
+            </Route>
+          </Route>
 
-          <PaginationItem>
-            <PaginationLink
-              href="#"
-              isActive={page === TOTAL_PAGES}
-              onClick={go(TOTAL_PAGES)}
-            >
-              {TOTAL_PAGES}
-            </PaginationLink>
-          </PaginationItem>
-
-          <PaginationItem>
-            <PaginationNext href="#" text="التالي" onClick={go(page + 1)} />
-          </PaginationItem>
-        </PaginationContent>
-      </Pagination>
-    </div>
-  )
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Route>
+      </Routes>
+    </BrowserRouter>
+  );
 }
-
-export default App
