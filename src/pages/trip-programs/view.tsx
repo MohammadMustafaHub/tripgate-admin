@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyTitle } from "@/components/ui/empty";
 import { Skeleton } from "@/components/ui/skeleton";
+import { imageUrl } from "@/lib/images";
 import { DAY_FORMS, formatNumber, formatPrice, formatTransport, pluralize } from "@/lib/format";
 import type { TripProgram, TripStep } from "@/models/trip-program";
 
@@ -62,7 +63,7 @@ function ProgramDetails({ program }: { program: TripProgram }) {
       <div className="grid gap-4 lg:grid-cols-2">
         <div className="relative">
           <RemoteImage
-            src={program.coverImage}
+            src={imageUrl(program.coverImage)}
             alt={program.name}
             className="aspect-[4/3] w-full rounded-xl border lg:aspect-auto lg:h-full"
           />
@@ -101,13 +102,13 @@ function ProgramDetails({ program }: { program: TripProgram }) {
             {program.images.map((image, index) => (
               <a
                 key={image + index}
-                href={image}
+                href={imageUrl(image) ?? undefined}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="overflow-hidden rounded-lg border outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
               >
                 <RemoteImage
-                  src={image}
+                  src={imageUrl(image)}
                   alt={`${program.name} - صورة ${formatNumber(index + 1)}`}
                   className="aspect-[4/3] w-full transition-transform duration-300 hover:scale-105"
                 />

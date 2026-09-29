@@ -9,6 +9,8 @@ import RegisterPage from "@/pages/auth/register";
 import VerifyPage from "@/pages/auth/verify";
 import DashboardView from "@/pages/dashboard/view";
 import PlaceholderPage from "@/pages/placeholder";
+import TripProgramCreatePage from "@/pages/trip-programs/create";
+import TripProgramEditPage from "@/pages/trip-programs/edit";
 import TripProgramsListPage from "@/pages/trip-programs/list";
 import TripProgramViewPage from "@/pages/trip-programs/view";
 
@@ -42,9 +44,9 @@ export default function App() {
               <Route index element={<DashboardView />} />
               <Route path="trip-programs">
                 <Route index element={<TripProgramsListPage />} />
-                <Route path="new" element={<PlaceholderPage />} />
+                <Route path="new" element={<TripProgramCreatePage />} />
                 <Route path=":id" element={<TripProgramViewPage />} />
-                <Route path=":id/edit" element={<PlaceholderPage />} />
+                <Route path=":id/edit" element={<TripProgramEditPage />} />
               </Route>
               <Route path="settings/tenant" element={<PlaceholderPage />} />
               <Route path="settings/account" element={<PlaceholderPage />} />

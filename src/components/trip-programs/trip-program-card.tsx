@@ -3,6 +3,7 @@ import { BusIcon, CalendarDaysIcon, GlobeIcon, UsersIcon } from "lucide-react";
 import { RemoteImage } from "@/components/remote-image";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { imageUrl } from "@/lib/images";
 import { DAY_FORMS, SEAT_FORMS, formatPrice, formatTransport, pluralize } from "@/lib/format";
 import type { TripProgram } from "@/models/trip-program";
 
@@ -16,7 +17,7 @@ export function TripProgramCard({ program }: { program: TripProgram }) {
       className={`${CARD_CLASS} group transition-[border-color,box-shadow] outline-none hover:border-primary/40 hover:shadow-md focus-visible:ring-3 focus-visible:ring-ring/50`}
     >
       <RemoteImage
-        src={program.coverImage}
+        src={imageUrl(program.coverImage)}
         alt={program.name}
         className="h-full w-36 shrink-0 transition-transform duration-300 group-hover:scale-[1.03] sm:w-52"
       />
