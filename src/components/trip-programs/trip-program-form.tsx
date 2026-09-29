@@ -1,19 +1,19 @@
 import { useState } from "react";
-import { Link } from "react-router";
 import { ArrowDownIcon, ArrowUpIcon, PlusIcon, Trash2Icon } from "lucide-react";
 import { uploadImage, uploadImages } from "@/api/media";
 import type { createTripProgram } from "@/api/trip-programs";
 import { FormError } from "@/components/form/form-error";
+import { FormActions, FormSection } from "@/components/form/form-section";
 import { ImageUpload } from "@/components/image-upload";
 import { MultiImageUpload } from "@/components/multi-image-upload";
 import { Button } from "@/components/ui/button";
-import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
+import { Field, FieldDescription, FieldError, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group";
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
-import { Spinner } from "@/components/ui/spinner";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
+import { scrollToFirstError } from "@/lib/scroll-to-error";
 import { DAY_FORMS, formatNumber, formatTransport, pluralize } from "@/lib/format";
 import type { TripProgram } from "@/models/trip-program";
 
@@ -174,10 +174,7 @@ export function TripProgramForm({
     const next = validate(values);
     setErrors(next);
     if (Object.keys(next).length > 0) {
-      // Bring the first problem into view.
-      requestAnimationFrame(() =>
-        document.querySelector("[aria-invalid=true]")?.scrollIntoView({ behavior: "smooth", block: "center" }),
-      );
+      scrollToFirstError();
       return;
     }
     onSubmit(toOutput(values));
@@ -388,36 +385,7 @@ export function TripProgramForm({
         </Button>
       </FormSection>
 
-      <div className="sticky bottom-0 z-10 -mx-4 mt-8 flex justify-end gap-2 border-t bg-card/95 px-4 py-3 backdrop-blur md:-mx-6 md:px-6">
-        <Button variant="ghost" render={<Link to={cancelTo} />} nativeButton={false}>
-          إلغاء
-        </Button>
-        <Button type="submit" disabled={pending}>
-          {pending && <Spinner />}
-          {submitLabel}
-        </Button>
-      </div>
+      <FormActions cancelTo={cancelTo} submitLabel={submitLabel} pending={pending} />
     </form>
-  );
-}
-
-/** Form section: title and description on one side, its fields on the other. */
-function FormSection({
-  title,
-  description,
-  children,
-}: {
-  title: string;
-  description: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <section className="grid gap-x-10 gap-y-4 border-t py-8 first-of-type:border-t-0 first-of-type:pt-2 lg:grid-cols-[18rem_1fr]">
-      <div className="flex flex-col gap-1">
-        <h3 className="text-base font-semibold">{title}</h3>
-        <p className="text-sm text-muted-foreground">{description}</p>
-      </div>
-      <FieldGroup className="min-w-0">{children}</FieldGroup>
-    </section>
   );
 }

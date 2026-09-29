@@ -13,6 +13,10 @@ import TripProgramCreatePage from "@/pages/trip-programs/create";
 import TripProgramEditPage from "@/pages/trip-programs/edit";
 import TripProgramsListPage from "@/pages/trip-programs/list";
 import TripProgramViewPage from "@/pages/trip-programs/view";
+import TripCreatePage from "@/pages/trips/create";
+import TripEditPage from "@/pages/trips/edit";
+import TripsListPage from "@/pages/trips/list";
+import TripViewPage from "@/pages/trips/view";
 
 export default function App() {
   return (
@@ -47,6 +51,12 @@ export default function App() {
                 <Route path="new" element={<TripProgramCreatePage />} />
                 <Route path=":id" element={<TripProgramViewPage />} />
                 <Route path=":id/edit" element={<TripProgramEditPage />} />
+              </Route>
+              <Route path="trips">
+                <Route index element={<TripsListPage />} />
+                <Route path="new" element={<TripCreatePage />} />
+                <Route path=":id" element={<TripViewPage />} />
+                <Route path=":id/edit" element={<TripEditPage />} />
               </Route>
               <Route path="settings/tenant" element={<PlaceholderPage />} />
               <Route path="settings/account" element={<PlaceholderPage />} />

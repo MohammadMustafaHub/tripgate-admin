@@ -3,6 +3,12 @@ const LOCALE = "ar-IQ-u-nu-latn";
 
 const numberFormatter = new Intl.NumberFormat(LOCALE);
 const dateFormatter = new Intl.DateTimeFormat(LOCALE, { dateStyle: "long" });
+const dateTimeFormatter = new Intl.DateTimeFormat(LOCALE, { dateStyle: "medium", timeStyle: "short" });
+const shortDateFormatter = new Intl.DateTimeFormat(LOCALE, { day: "numeric", month: "long" });
+const dayFormatter = new Intl.DateTimeFormat(LOCALE, { day: "numeric" });
+const monthFormatter = new Intl.DateTimeFormat(LOCALE, { month: "long" });
+const weekdayFormatter = new Intl.DateTimeFormat(LOCALE, { weekday: "long" });
+const timeFormatter = new Intl.DateTimeFormat(LOCALE, { timeStyle: "short" });
 const pluralRules = new Intl.PluralRules("ar");
 
 export function formatNumber(value: number): string {
@@ -11,6 +17,37 @@ export function formatNumber(value: number): string {
 
 export function formatDate(value: string | Date): string {
   return dateFormatter.format(new Date(value));
+}
+
+/** e.g. "12 تشرين الأول 2026، 8:00 ص" */
+export function formatDateTime(value: string | Date): string {
+  return dateTimeFormatter.format(new Date(value));
+}
+
+/** e.g. "12 تشرين الأول" */
+export function formatShortDate(value: string | Date): string {
+  return shortDateFormatter.format(new Date(value));
+}
+
+/** Separate parts for calendar-style date tiles. */
+export function dateParts(value: string | Date) {
+  const date = new Date(value);
+  return {
+    day: dayFormatter.format(date),
+    month: monthFormatter.format(date),
+    weekday: weekdayFormatter.format(date),
+    time: timeFormatter.format(date),
+  };
+}
+
+const relativeFormatter = new Intl.RelativeTimeFormat(LOCALE, { numeric: "auto" });
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+/** Whole calendar days from today, e.g. "غداً", "بعد 5 أيام", "قبل يومين". */
+export function formatRelativeDay(value: string | Date): string {
+  const startOfDay = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
+  const days = Math.round((startOfDay(new Date(value)) - startOfDay(new Date())) / DAY_MS);
+  return relativeFormatter.format(days, "day");
 }
 
 /** Iraqi dinar amount, e.g. "250,000 د.ع" */

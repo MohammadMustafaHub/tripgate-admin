@@ -34,6 +34,11 @@ export const NAV_GROUPS: NavGroup[] = [
             to: "/trip-programs",
             subPages: { new: "إضافة برنامج", "*": "تفاصيل البرنامج" },
           },
+          {
+            title: "الرحلات المجدولة",
+            to: "/trips",
+            subPages: { new: "جدولة رحلة", "*": "تفاصيل الرحلة" },
+          },
         ],
       },
     ],

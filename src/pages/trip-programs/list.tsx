@@ -3,17 +3,9 @@ import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { MapIcon, PlusIcon } from "lucide-react";
 import { listTripPrograms } from "@/api/trip-programs";
 import { TripProgramCard, TripProgramCardSkeleton } from "@/components/trip-programs/trip-program-card";
+import { ListPagination } from "@/components/list-pagination";
 import { Button } from "@/components/ui/button";
 import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty";
-import {
-  Pagination,
-  PaginationContent,
-  PaginationEllipsis,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from "@/components/ui/pagination";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatNumber } from "@/lib/format";
 
@@ -99,66 +91,7 @@ export default function TripProgramsListPage() {
         </div>
       )}
 
-      {pagination && pagination.totalPages > 1 && (
-        <Pagination className="mt-2">
-          <PaginationContent>
-            <PaginationItem>
-              <PaginationPrevious
-                text="السابق"
-                href={`?page=${page - 1}`}
-                aria-disabled={!pagination.hasPreviousPage}
-                className="aria-disabled:pointer-events-none aria-disabled:opacity-50"
-                onClick={(e) => {
-                  e.preventDefault();
-                  goToPage(page - 1);
-                }}
-              />
-            </PaginationItem>
-            {pageWindow(page, pagination.totalPages).map((n, i) =>
-              n === null ? (
-                <PaginationItem key={`gap-${i}`}>
-                  <PaginationEllipsis />
-                </PaginationItem>
-              ) : (
-                <PaginationItem key={n}>
-                  <PaginationLink
-                    href={`?page=${n}`}
-                    isActive={n === page}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      goToPage(n);
-                    }}
-                  >
-                    {formatNumber(n)}
-                  </PaginationLink>
-                </PaginationItem>
-              ),
-            )}
-            <PaginationItem>
-              <PaginationNext
-                text="التالي"
-                href={`?page=${page + 1}`}
-                aria-disabled={!pagination.hasNextPage}
-                className="aria-disabled:pointer-events-none aria-disabled:opacity-50"
-                onClick={(e) => {
-                  e.preventDefault();
-                  goToPage(page + 1);
-                }}
-              />
-            </PaginationItem>
-          </PaginationContent>
-        </Pagination>
-      )}
+      <ListPagination page={page} pagination={pagination} onPageChange={goToPage} />
     </div>
   );
-}
-
-/** First, last and the pages around the current one; `null` marks a gap. */
-function pageWindow(current: number, total: number): (number | null)[] {
-  const pages: (number | null)[] = [];
-  for (let n = 1; n <= total; n++) {
-    if (n === 1 || n === total || Math.abs(n - current) <= 1) pages.push(n);
-    else if (pages.at(-1) !== null) pages.push(null);
-  }
-  return pages;
 }

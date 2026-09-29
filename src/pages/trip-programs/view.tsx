@@ -1,15 +1,17 @@
 import { Link, useParams } from "react-router";
 import { useQuery } from "@tanstack/react-query";
-import { BusIcon, CalendarDaysIcon, GlobeIcon, MapPinIcon, PencilIcon, UsersIcon, WalletIcon, type LucideIcon } from "lucide-react";
+import { BusIcon, CalendarPlusIcon, CalendarRangeIcon, CalendarDaysIcon, GlobeIcon, MapPinIcon, PencilIcon, UsersIcon, WalletIcon } from "lucide-react";
 import { getTripProgram } from "@/api/trip-programs";
 import { RemoteImage } from "@/components/remote-image";
+import { StatTile, StatTiles } from "@/components/stat-tile";
+import { ItineraryStepper } from "@/components/trip-programs/itinerary-stepper";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyTitle } from "@/components/ui/empty";
 import { Skeleton } from "@/components/ui/skeleton";
 import { imageUrl } from "@/lib/images";
 import { DAY_FORMS, formatNumber, formatPrice, formatTransport, pluralize } from "@/lib/format";
-import type { TripProgram, TripStep } from "@/models/trip-program";
+import type { TripProgram } from "@/models/trip-program";
 
 export default function TripProgramViewPage() {
   const { id = "" } = useParams();
@@ -52,11 +54,19 @@ function ProgramDetails({ program }: { program: TripProgram }) {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex flex-wrap items-center gap-4">
+      <div className="flex flex-wrap items-center gap-3">
         <h2 className="min-w-0 flex-1 text-2xl font-bold">{program.name}</h2>
+        <Button variant="ghost" render={<Link to={`/trips?program=${program.id}`} />} nativeButton={false}>
+          <CalendarRangeIcon />
+          الرحلات المجدولة
+        </Button>
         <Button variant="outline" render={<Link to={`/trip-programs/${program.id}/edit`} />} nativeButton={false}>
           <PencilIcon />
           تعديل
+        </Button>
+        <Button render={<Link to={`/trips/new?program=${program.id}`} />} nativeButton={false}>
+          <CalendarPlusIcon />
+          جدولة رحلة
         </Button>
       </div>
 
@@ -72,13 +82,12 @@ function ProgramDetails({ program }: { program: TripProgram }) {
             {program.isInternational ? "رحلة دولية" : "رحلة محلية"}
           </Badge>
         </div>
-        {/* Square tiles; gap-px over a border-coloured background draws the dividing lines. */}
-        <div className="grid grid-cols-2 gap-px overflow-hidden rounded-xl border bg-border">
+        <StatTiles>
           <StatTile icon={CalendarDaysIcon} label="مدة البرنامج" value={pluralize(program.totalDays, DAY_FORMS)} />
           <StatTile icon={WalletIcon} label="سعر المقعد" value={formatPrice(program.defaultPricePerSeat)} />
           <StatTile icon={UsersIcon} label="عدد المقاعد" value={formatNumber(program.defaultSeats)} />
           <StatTile icon={BusIcon} label="وسيلة النقل" value={formatTransport(program.transportMethod)} />
-        </div>
+        </StatTiles>
       </div>
 
       <section className="flex flex-col gap-3">
@@ -91,7 +100,7 @@ function ProgramDetails({ program }: { program: TripProgram }) {
         {steps.length === 0 ? (
           <p className="text-sm text-muted-foreground">لم تُضف مراحل لهذا البرنامج.</p>
         ) : (
-          <Stepper steps={steps} />
+          <ItineraryStepper steps={steps} />
         )}
       </section>
 
@@ -118,59 +127,6 @@ function ProgramDetails({ program }: { program: TripProgram }) {
         </section>
       )}
     </div>
-  );
-}
-
-function StatTile({ icon: Icon, label, value }: { icon: LucideIcon; label: string; value: string }) {
-  return (
-    <div className="flex aspect-square flex-col items-center justify-center gap-2 bg-card p-4 text-center">
-      <span className="flex size-10 items-center justify-center rounded-full bg-muted text-muted-foreground">
-        <Icon className="size-5" />
-      </span>
-      <span className="text-2xl font-semibold tracking-tight tabular-nums sm:text-3xl">{value}</span>
-      <span className="text-sm font-medium text-muted-foreground">{label}</span>
-    </div>
-  );
-}
-
-/**
- * Steps with the day range each covers. Horizontal (scrolling when long) on wide screens,
- * vertical on phones.
- */
-function Stepper({ steps }: { steps: TripStep[] }) {
-  // Each step starts the day after the previous one ends.
-  const ends = steps.reduce<number[]>((acc, step) => [...acc, (acc.at(-1) ?? 0) + Math.max(step.days, 1)], []);
-
-  return (
-    <ol className="flex flex-col md:flex-row md:overflow-x-auto md:pb-2">
-      {steps.map((step, index) => {
-        const from = (ends[index - 1] ?? 0) + 1;
-        const to = ends[index];
-        const isLast = index === steps.length - 1;
-        return (
-          <li
-            key={step.position}
-            className="relative flex gap-4 pb-6 last:pb-0 md:min-w-60 md:flex-1 md:flex-col md:gap-3 md:pe-6 md:pb-0"
-          >
-            {!isLast && (
-              <>
-                <span aria-hidden className="absolute start-3.5 top-9 bottom-1 w-px bg-border md:hidden" />
-                <span aria-hidden className="absolute start-10 end-1 top-3.5 hidden h-px bg-border md:block" />
-              </>
-            )}
-            <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-brand-dark text-xs font-semibold text-white">
-              {formatNumber(index + 1)}
-            </span>
-            <div className="flex min-w-0 flex-1 flex-col gap-1 pt-0.5 md:pt-0">
-              <span className="text-xs font-medium text-primary">
-                {from === to ? `اليوم ${formatNumber(from)}` : `الأيام ${formatNumber(from)} – ${formatNumber(to)}`}
-              </span>
-              <p className="text-sm leading-6 whitespace-pre-line">{step.description}</p>
-            </div>
-          </li>
-        );
-      })}
-    </ol>
   );
 }
 

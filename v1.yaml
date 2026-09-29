@@ -189,6 +189,297 @@ paths:
             text/json:
               schema:
                 $ref: "#/components/schemas/ProblemDetails"
+  /api/trips/Trips:
+    get:
+      tags:
+        - Trips
+      parameters:
+        - name: TripProgramId
+          in: query
+          description: Only list trips scheduled from this program.
+          schema:
+            type: string
+            format: uuid
+        - name: IsActive
+          in: query
+          description: Only list active (true) or inactive (false) trips.
+          schema:
+            type: boolean
+        - name: Page
+          in: query
+          description: One-based page number.
+          schema:
+            pattern: ^-?(?:0|[1-9]\d*)$
+            type:
+              - integer
+              - string
+            format: int32
+        - name: PageSize
+          in: query
+          description: Number of trips per page, at most 100.
+          schema:
+            pattern: ^-?(?:0|[1-9]\d*)$
+            type:
+              - integer
+              - string
+            format: int32
+      responses:
+        "200":
+          description: OK
+          content:
+            text/plain:
+              schema:
+                $ref: "#/components/schemas/PaginatedOfTripResponse"
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaginatedOfTripResponse"
+            text/json:
+              schema:
+                $ref: "#/components/schemas/PaginatedOfTripResponse"
+    post:
+      tags:
+        - Trips
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateTripRequest"
+          text/json:
+            schema:
+              $ref: "#/components/schemas/CreateTripRequest"
+          application/*+json:
+            schema:
+              $ref: "#/components/schemas/CreateTripRequest"
+        required: true
+      responses:
+        "201":
+          description: Created
+          content:
+            text/plain:
+              schema:
+                $ref: "#/components/schemas/SuccessOfTripResponse"
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessOfTripResponse"
+            text/json:
+              schema:
+                $ref: "#/components/schemas/SuccessOfTripResponse"
+        "404":
+          description: Not Found
+          content:
+            text/plain:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+  /api/trips/Trips/{id}:
+    get:
+      tags:
+        - Trips
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: OK
+          content:
+            text/plain:
+              schema:
+                $ref: "#/components/schemas/SuccessOfTripResponse"
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessOfTripResponse"
+            text/json:
+              schema:
+                $ref: "#/components/schemas/SuccessOfTripResponse"
+        "404":
+          description: Not Found
+          content:
+            text/plain:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+    put:
+      tags:
+        - Trips
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateTripRequest"
+          text/json:
+            schema:
+              $ref: "#/components/schemas/UpdateTripRequest"
+          application/*+json:
+            schema:
+              $ref: "#/components/schemas/UpdateTripRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            text/plain:
+              schema:
+                $ref: "#/components/schemas/SuccessOfTripResponse"
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessOfTripResponse"
+            text/json:
+              schema:
+                $ref: "#/components/schemas/SuccessOfTripResponse"
+        "404":
+          description: Not Found
+          content:
+            text/plain:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+        "409":
+          description: The new seat count is below the seats already reserved.
+          content:
+            text/plain:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+    delete:
+      tags:
+        - Trips
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "204":
+          description: No Content
+        "404":
+          description: Not Found
+          content:
+            text/plain:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+        "409":
+          description: The trip has bookings; deactivate it instead.
+          content:
+            text/plain:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+  /api/trips/Trips/{id}/activate:
+    post:
+      tags:
+        - Trips
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: OK
+          content:
+            text/plain:
+              schema:
+                $ref: "#/components/schemas/SuccessOfTripResponse"
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessOfTripResponse"
+            text/json:
+              schema:
+                $ref: "#/components/schemas/SuccessOfTripResponse"
+        "404":
+          description: Not Found
+          content:
+            text/plain:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+  /api/trips/Trips/{id}/deactivate:
+    post:
+      tags:
+        - Trips
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: OK
+          content:
+            text/plain:
+              schema:
+                $ref: "#/components/schemas/SuccessOfTripResponse"
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessOfTripResponse"
+            text/json:
+              schema:
+                $ref: "#/components/schemas/SuccessOfTripResponse"
+        "404":
+          description: Not Found
+          content:
+            text/plain:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
   /api/tenancy/Tenants:
     post:
       tags:
@@ -747,6 +1038,42 @@ components:
           description: Host label the tenant is reached at, e.g. 'acme' for
             acme.tripgate.app.
       description: Details for creating a tenant workspace.
+    CreateTripRequest:
+      required:
+        - tripProgramId
+        - takeoffDate
+        - finalRegistrationDate
+      type: object
+      properties:
+        tripProgramId:
+          type: string
+          description: Program the trip is scheduled from.
+          format: uuid
+        takeoffDate:
+          type: string
+          description: When the trip departs. Must include a time zone.
+          format: date-time
+        finalRegistrationDate:
+          type: string
+          description: When bookings close. Must not be after the takeoff date.
+          format: date-time
+        pricePerSeat:
+          pattern: ^-?(?:0|[1-9]\d*)(?:\.\d+)?$
+          type:
+            - "null"
+            - number
+            - string
+          description: Price per seat. Defaults to the program's price when omitted.
+          format: double
+        seats:
+          pattern: ^-?(?:0|[1-9]\d*)$
+          type:
+            - "null"
+            - integer
+            - string
+          description: Number of seats. Defaults to the program's seat count when omitted.
+          format: int32
+      description: A departure to schedule from a trip program.
     ForgotPasswordRequest:
       required:
         - phoneNumber
@@ -797,6 +1124,20 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/TripProgramResponse"
+        pagination:
+          $ref: "#/components/schemas/PaginationData"
+        isSuccessful:
+          type: boolean
+    PaginatedOfTripResponse:
+      required:
+        - data
+        - pagination
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/TripResponse"
         pagination:
           $ref: "#/components/schemas/PaginationData"
         isSuccessful:
@@ -993,6 +1334,17 @@ components:
             - $ref: "#/components/schemas/TripProgramResponse"
         isSuccessful:
           type: boolean
+    SuccessOfTripResponse:
+      required:
+        - data
+      type: object
+      properties:
+        data:
+          oneOf:
+            - type: "null"
+            - $ref: "#/components/schemas/TripResponse"
+        isSuccessful:
+          type: boolean
     SuccessOfUserResponse:
       required:
         - data
@@ -1177,6 +1529,70 @@ components:
           description: When the program was created.
           format: date-time
       description: "A trip program: the reusable template trips are scheduled from."
+    TripResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Identifier of the trip.
+          format: uuid
+        tripProgramId:
+          type: string
+          description: Program the trip is scheduled from.
+          format: uuid
+        tripProgramName:
+          type: string
+          description: Display name of the program.
+        takeoffDate:
+          type: string
+          description: When the trip departs.
+          format: date-time
+        finalRegistrationDate:
+          type: string
+          description: When bookings close.
+          format: date-time
+        pricePerSeat:
+          pattern: ^-?(?:0|[1-9]\d*)(?:\.\d+)?$
+          type:
+            - number
+            - string
+          description: Price per seat.
+          format: double
+        seats:
+          pattern: ^-?(?:0|[1-9]\d*)$
+          type:
+            - integer
+            - string
+          description: Total number of seats.
+          format: int32
+        reservedSeats:
+          pattern: ^-?(?:0|[1-9]\d*)$
+          type:
+            - integer
+            - string
+          description: Seats held by pending and confirmed bookings.
+          format: int32
+        availableSeats:
+          pattern: ^-?(?:0|[1-9]\d*)$
+          type:
+            - integer
+            - string
+          description: Seats still available to book.
+          format: int32
+        isInternational:
+          type: boolean
+          description: Whether bookings must carry passport data.
+        isActive:
+          type: boolean
+          description: Whether the trip is on sale.
+        isOpenForBooking:
+          type: boolean
+          description: Whether the trip is active and registration has not closed.
+        createdAt:
+          type: string
+          description: When the trip was created.
+          format: date-time
+      description: A scheduled departure of a trip program.
     TripStepRequest:
       required:
         - position
@@ -1224,6 +1640,37 @@ components:
           type: string
           description: What happens during the step.
       description: One step of a program's itinerary.
+    UpdateTripRequest:
+      required:
+        - takeoffDate
+        - finalRegistrationDate
+        - pricePerSeat
+        - seats
+      type: object
+      properties:
+        takeoffDate:
+          type: string
+          description: When the trip departs. Must include a time zone.
+          format: date-time
+        finalRegistrationDate:
+          type: string
+          description: When bookings close. Must not be after the takeoff date.
+          format: date-time
+        pricePerSeat:
+          pattern: ^-?(?:0|[1-9]\d*)(?:\.\d+)?$
+          type:
+            - number
+            - string
+          description: Price per seat.
+          format: double
+        seats:
+          pattern: ^-?(?:0|[1-9]\d*)$
+          type:
+            - integer
+            - string
+          description: Number of seats. Cannot drop below the seats already reserved.
+          format: int32
+      description: New schedule, price and size of a trip.
     UserResponse:
       required:
         - id
@@ -1289,6 +1736,7 @@ security:
   - Bearer: []
 tags:
   - name: TripPrograms
+  - name: Trips
   - name: Tenants
   - name: Media
   - name: Password
