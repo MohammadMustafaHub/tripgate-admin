@@ -25,7 +25,7 @@ import {
   SidebarRail,
   useSidebar,
 } from "@/components/ui/sidebar";
-import { NAV_GROUPS, type NavItem } from "@/layouts/navigation";
+import { NAV_GROUPS, isNavActive, type NavItem } from "@/layouts/navigation";
 import { formatPhoneNumber } from "@/lib/phone";
 import { useUserStore } from "@/stores/user-store";
 
@@ -104,7 +104,7 @@ function NavEntry({ item }: { item: NavItem }) {
 function NavTree({ item }: { item: NavItem }) {
   const { pathname } = useLocation();
   const { state, isMobile, setOpen: setSidebarOpen } = useSidebar();
-  const containsActive = item.children!.some((child) => child.to === pathname);
+  const containsActive = item.children!.some((child) => isNavActive(pathname, child.to));
   const [open, setOpen] = useState(containsActive);
 
   return (
@@ -140,8 +140,8 @@ function NavTree({ item }: { item: NavItem }) {
             <SidebarMenuSubItem key={child.to} className={TREE_ITEM_CLASS}>
               <SidebarMenuSubButton
                 className={NAV_SUB_BUTTON_CLASS}
-                isActive={pathname === child.to}
-                render={<NavLink to={child.to} end />}
+                isActive={isNavActive(pathname, child.to)}
+                render={<NavLink to={child.to} />}
               >
                 <span>{child.title}</span>
               </SidebarMenuSubButton>

@@ -9,6 +9,8 @@ import RegisterPage from "@/pages/auth/register";
 import VerifyPage from "@/pages/auth/verify";
 import DashboardView from "@/pages/dashboard/view";
 import PlaceholderPage from "@/pages/placeholder";
+import TripProgramsListPage from "@/pages/trip-programs/list";
+import TripProgramViewPage from "@/pages/trip-programs/view";
 
 export default function App() {
   return (
@@ -38,7 +40,12 @@ export default function App() {
           <Route element={<AuthGuard step="ready" />}>
             <Route element={<DashboardLayout />}>
               <Route index element={<DashboardView />} />
-              <Route path="trip-programs" element={<PlaceholderPage />} />
+              <Route path="trip-programs">
+                <Route index element={<TripProgramsListPage />} />
+                <Route path="new" element={<PlaceholderPage />} />
+                <Route path=":id" element={<TripProgramViewPage />} />
+                <Route path=":id/edit" element={<PlaceholderPage />} />
+              </Route>
               <Route path="settings/tenant" element={<PlaceholderPage />} />
               <Route path="settings/account" element={<PlaceholderPage />} />
             </Route>

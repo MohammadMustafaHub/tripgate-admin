@@ -259,6 +259,60 @@ paths:
             text/json:
               schema:
                 $ref: "#/components/schemas/ProblemDetails"
+  /api/Media/images:
+    post:
+      tags:
+        - Media
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                File:
+                  $ref: "#/components/schemas/IFormFile"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            text/plain:
+              schema:
+                $ref: "#/components/schemas/SuccessOfImageResponse"
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessOfImageResponse"
+            text/json:
+              schema:
+                $ref: "#/components/schemas/SuccessOfImageResponse"
+  /api/Media/images/batch:
+    post:
+      tags:
+        - Media
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                Files:
+                  type: array
+                  items:
+                    $ref: "#/components/schemas/IFormFile"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            text/plain:
+              schema:
+                $ref: "#/components/schemas/SuccessOfListOfImageResponse"
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessOfListOfImageResponse"
+            text/json:
+              schema:
+                $ref: "#/components/schemas/SuccessOfListOfImageResponse"
   /api/auth/Password/change:
     post:
       tags:
@@ -703,6 +757,22 @@ components:
           type: string
           description: Iraqi phone number in the format 9647XXXXXXXXX.
       description: Starts the forgot password flow for a phone number.
+    IFormFile:
+      type: string
+      format: binary
+    ImageResponse:
+      required:
+        - key
+        - url
+      type: object
+      properties:
+        key:
+          type: string
+          description: Storage key of the image.
+        url:
+          type: string
+          description: Public URL the image is served from.
+      description: An uploaded image.
     LoginRequest:
       required:
         - phoneNumber
@@ -844,6 +914,30 @@ components:
           type: string
           description: The replacement password. Must be at least 8 characters.
       description: Sets a new password using a password reset token.
+    SuccessOfImageResponse:
+      required:
+        - data
+      type: object
+      properties:
+        data:
+          oneOf:
+            - type: "null"
+            - $ref: "#/components/schemas/ImageResponse"
+        isSuccessful:
+          type: boolean
+    SuccessOfListOfImageResponse:
+      required:
+        - data
+      type: object
+      properties:
+        data:
+          type:
+            - "null"
+            - array
+          items:
+            $ref: "#/components/schemas/ImageResponse"
+        isSuccessful:
+          type: boolean
     SuccessOfPasswordResetTokenResponse:
       required:
         - data
@@ -1196,6 +1290,7 @@ security:
 tags:
   - name: TripPrograms
   - name: Tenants
+  - name: Media
   - name: Password
   - name: Registration
   - name: Tokens
