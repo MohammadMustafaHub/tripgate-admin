@@ -12,12 +12,12 @@ const STATUS_ERRORS: Record<UpdateBookingStatusError, string> = {
 };
 
 /**
- * Accept and cancel for the bookings of one trip. Cancelling goes through a confirmation
- * step: `requestCancel` opens it and `confirmCancel` sends the change.
+ * Accept and cancel for bookings. Cancelling goes through a confirmation step:
+ * `requestCancel` opens it and `confirmCancel` sends the change.
  */
-export function useBookingActions(tripId: string) {
+export function useBookingActions() {
   const queryClient = useQueryClient();
-  const [cancelling, setCancelling] = useState<Booking | null>(null);
+  const [cancelling, setCancelling] = useState<{ tripId: string; booking: Booking } | null>(null);
 
   const mutation = useMutation({
     mutationFn: updateBookingStatus,
@@ -41,12 +41,18 @@ export function useBookingActions(tripId: string) {
     /** Booking whose status is being changed. */
     busyBookingId: mutation.isPending ? mutation.variables.bookingId : null,
     pending: mutation.isPending,
-    cancelling,
-    accept: (booking: Booking) =>
+    /** Booking awaiting cancel confirmation. */
+    cancelling: cancelling?.booking ?? null,
+    accept: (tripId: string, booking: Booking) =>
       mutation.mutate({ tripId, bookingId: booking.id, status: BookingStatus.Confirmed }),
-    requestCancel: (booking: Booking) => setCancelling(booking),
+    requestCancel: (tripId: string, booking: Booking) => setCancelling({ tripId, booking }),
     confirmCancel: () =>
-      cancelling && mutation.mutate({ tripId, bookingId: cancelling.id, status: BookingStatus.Cancelled }),
+      cancelling &&
+      mutation.mutate({
+        tripId: cancelling.tripId,
+        bookingId: cancelling.booking.id,
+        status: BookingStatus.Cancelled,
+      }),
     dismissCancel: () => setCancelling(null),
   };
 }

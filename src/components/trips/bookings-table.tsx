@@ -16,7 +16,7 @@ const LOADING_ROWS = 3;
  * Bookings in a square-cornered table. The header row is always shown; the body shows
  * placeholder rows while loading and an empty-state row when there is nothing to list.
  */
-export function BookingsTable({
+export function BookingsTable<T extends Booking & { tripName?: string; takeoffDate?: string }>({
   bookings,
   loading = false,
   showTrip = false,
@@ -28,7 +28,7 @@ export function BookingsTable({
   onCancel,
 }: {
   /** List items also carry their trip, shown in a column when `showTrip` is set. */
-  bookings: (Booking & { tripName?: string; takeoffDate?: string })[];
+  bookings: T[];
   loading?: boolean;
   showTrip?: boolean;
   /** International trips carry passport data for each seat. */
@@ -39,8 +39,8 @@ export function BookingsTable({
   busyBookingId?: string | null;
   emptyMessage: string;
   /** Omit both actions to show a read-only table without the actions column. */
-  onAccept?: (booking: Booking) => void;
-  onCancel?: (booking: Booking) => void;
+  onAccept?: (booking: T) => void;
+  onCancel?: (booking: T) => void;
 }) {
   const showActions = !!(onAccept || onCancel);
   const columnCount = 6 + Number(showTrip) + Number(showPassports) + Number(showActions);

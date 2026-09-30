@@ -1,15 +1,18 @@
 import { Link, useSearchParams } from "react-router";
-import { keepPreviousData, useQuery } from "@tanstack/react-query";
-import { ArrowUpLeftIcon, InfoIcon } from "lucide-react";
+import { useState } from "react";
+import { keepPreviousData, useQuery, useQueryClient } from "@tanstack/react-query";
+import { ArrowUpLeftIcon, UserPlusIcon } from "lucide-react";
 import { listAllBookings, listBookings } from "@/api/bookings";
 import { listTrips } from "@/api/trips";
 import { ListPagination } from "@/components/list-pagination";
 import { SegmentedTabs } from "@/components/segmented-tabs";
+import { AddBookingDialog } from "@/components/trips/add-booking-dialog";
 import { BookingsTable } from "@/components/trips/bookings-table";
 import { CancelBookingDialog } from "@/components/trips/cancel-booking-dialog";
 import { Button } from "@/components/ui/button";
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
 import { Skeleton } from "@/components/ui/skeleton";
+import { toast } from "@/components/ui/toast";
 import { useBookingActions } from "@/hooks/use-booking-actions";
 import { formatNumber, formatShortDate } from "@/lib/format";
 import { BookingStatus } from "@/models/booking";
@@ -64,6 +67,10 @@ export default function BookingsListPage() {
   });
   const trips = tripsQuery.data?.ok ? tripsQuery.data.value.data : [];
   const selectedTrip = trips.find((trip) => trip.id === tripId);
+  // Only trips that can still take a booking are offered in the add dialog.
+  const bookableTrips = trips.filter((trip) => trip.isOpenForBooking && trip.availableSeats > 0);
+  const [adding, setAdding] = useState(false);
+  const queryClient = useQueryClient();
 
   const { data: result, isPending } = useQuery({
     queryKey: ["bookings", tripId ?? "all", { filter, page }],
@@ -76,8 +83,7 @@ export default function BookingsListPage() {
   const bookings = result?.ok ? result.value.data : [];
   const pagination = result?.ok ? result.value.pagination : undefined;
 
-  // Changing a booking's status needs its trip, which the all-trips list does not include.
-  const actions = useBookingActions(tripId ?? "");
+  const actions = useBookingActions();
 
   /** Updates the given search params and returns to the first page. */
   const updateParams = (changes: Record<string, string | null>) => {
@@ -109,12 +115,18 @@ export default function BookingsListPage() {
             <span className="text-sm text-muted-foreground">{COUNT_LABELS[filter]}</span>
           </p>
         )}
-        {tripId && (
-          <Button variant="link" className="px-2" render={<Link to={`/trips/${tripId}`} />} nativeButton={false}>
-            عرض الرحلة
-            <ArrowUpLeftIcon />
+        <div className="flex items-center gap-2">
+          {tripId && (
+            <Button variant="link" className="px-2" render={<Link to={`/trips/${tripId}`} />} nativeButton={false}>
+              عرض الرحلة
+              <ArrowUpLeftIcon />
+            </Button>
+          )}
+          <Button onClick={() => setAdding(true)} disabled={tripsQuery.isPending}>
+            <UserPlusIcon />
+            إضافة حجز
           </Button>
-        )}
+        </div>
       </div>
 
       <div className="flex flex-wrap items-center gap-3">
@@ -143,13 +155,6 @@ export default function BookingsListPage() {
         </NativeSelect>
       </div>
 
-      {!tripId && (
-        <p className="flex items-center gap-2 text-sm text-muted-foreground">
-          <InfoIcon className="size-4 shrink-0" />
-          اختر رحلة من القائمة لتتمكن من قبول الحجوزات أو إلغائها.
-        </p>
-      )}
-
       {result && !result.ok ? (
         <p className="border border-destructive/40 bg-destructive/5 px-4 py-3 text-sm text-destructive">
           {result.error === "TRIP_NOT_FOUND"
@@ -165,12 +170,25 @@ export default function BookingsListPage() {
           firstIndex={(page - 1) * PAGE_SIZE + 1}
           busyBookingId={actions.busyBookingId}
           emptyMessage={EMPTY_MESSAGES[filter]}
-          onAccept={tripId ? actions.accept : undefined}
-          onCancel={tripId ? actions.requestCancel : undefined}
+          onAccept={(booking) => actions.accept(booking.tripId, booking)}
+          onCancel={(booking) => actions.requestCancel(booking.tripId, booking)}
         />
       )}
 
       <ListPagination page={page} pagination={pagination} onPageChange={goToPage} />
+
+      <AddBookingDialog
+        tripOptions={bookableTrips}
+        initialTripId={tripId}
+        open={adding}
+        onOpenChange={setAdding}
+        onCreated={() => {
+          setAdding(false);
+          void queryClient.invalidateQueries({ queryKey: ["bookings"] });
+          void queryClient.invalidateQueries({ queryKey: ["trips"] });
+          toast.add({ type: "success", title: "تمت إضافة الحجز." });
+        }}
+      />
 
       <CancelBookingDialog
         booking={actions.cancelling}

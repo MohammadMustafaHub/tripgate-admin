@@ -61,7 +61,7 @@ export function TripBookings({ trip }: { trip: TripDetails }) {
     void queryClient.invalidateQueries({ queryKey: ["trips"] });
   };
 
-  const actions = useBookingActions(trip.id);
+  const actions = useBookingActions();
 
   const pendingCount = trip.bookings.filter((b) => b.status === BookingStatus.Pending).length;
 
@@ -110,8 +110,8 @@ export function TripBookings({ trip }: { trip: TripDetails }) {
           firstIndex={(page - 1) * PAGE_SIZE + 1}
           busyBookingId={actions.busyBookingId}
           emptyMessage={EMPTY_MESSAGES[filter]}
-          onAccept={actions.accept}
-          onCancel={actions.requestCancel}
+          onAccept={(booking) => actions.accept(trip.id, booking)}
+          onCancel={(booking) => actions.requestCancel(trip.id, booking)}
         />
       )}
 

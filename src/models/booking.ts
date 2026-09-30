@@ -26,6 +26,7 @@ export interface Booking {
 
 /** A booking as returned by the bookings list, with the trip it is on. */
 export interface BookingListItem extends Booking {
+  tripId: string;
   tripName: string;
   takeoffDate: string;
 }

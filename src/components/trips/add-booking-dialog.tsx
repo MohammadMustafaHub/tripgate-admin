@@ -14,8 +14,9 @@ import {
 } from "@/components/ui/dialog";
 import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
+import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
 import { Spinner } from "@/components/ui/spinner";
-import { formatNumber } from "@/lib/format";
+import { formatNumber, formatShortDate } from "@/lib/format";
 import { toApiPhoneNumber } from "@/lib/phone";
 import type { Booking } from "@/models/booking";
 import type { Trip } from "@/models/trip";
@@ -43,14 +44,23 @@ interface FormErrors {
   passports?: Record<number, { ownerName?: string; number?: string }>;
 }
 
-/** Dialog for the admin to book seats on a trip on a customer's behalf. */
+/**
+ * Dialog for the admin to book seats on a trip on a customer's behalf. Pass `trip` to book on a
+ * known trip, or `tripOptions` to let the admin pick the trip first.
+ */
 export function AddBookingDialog({
   trip,
+  tripOptions,
+  initialTripId,
   open,
   onOpenChange,
   onCreated,
 }: {
-  trip: Trip;
+  trip?: Trip;
+  /** Trips the admin can choose from when no `trip` is given. */
+  tripOptions?: Trip[];
+  /** Pre-selected option, e.g. the trip the page is filtered to. */
+  initialTripId?: string;
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onCreated: (booking: Booking) => void;
@@ -61,13 +71,96 @@ export function AddBookingDialog({
         <DialogHeader>
           <DialogTitle>إضافة حجز</DialogTitle>
           <DialogDescription>
-            احجز مقاعد على هذه الرحلة نيابةً عن أحد العملاء. المقاعد المتاحة: {formatNumber(trip.availableSeats)}.
+            {trip
+              ? `احجز مقاعد على هذه الرحلة نيابةً عن أحد العملاء. المقاعد المتاحة: ${formatNumber(trip.availableSeats)}.`
+              : "اختر الرحلة، ثم أدخل بيانات العميل لحجز مقاعد نيابةً عنه."}
           </DialogDescription>
         </DialogHeader>
         {/* Mounted only while open, so the form starts empty each time. */}
-        {open && <BookingForm trip={trip} onCancel={() => onOpenChange(false)} onCreated={onCreated} />}
+        {open &&
+          (trip ? (
+            <BookingForm trip={trip} onCancel={() => onOpenChange(false)} onCreated={onCreated} />
+          ) : (
+            <TripPickerBody
+              trips={tripOptions ?? []}
+              initialTripId={initialTripId}
+              onCancel={() => onOpenChange(false)}
+              onCreated={onCreated}
+            />
+          ))}
       </DialogContent>
     </Dialog>
+  );
+}
+
+function TripPickerBody({
+  trips,
+  initialTripId,
+  onCancel,
+  onCreated,
+}: {
+  trips: Trip[];
+  initialTripId?: string;
+  onCancel: () => void;
+  onCreated: (booking: Booking) => void;
+}) {
+  const [tripId, setTripId] = useState(() =>
+    trips.some((t) => t.id === initialTripId) ? initialTripId! : "",
+  );
+  const trip = trips.find((t) => t.id === tripId);
+
+  if (trips.length === 0) {
+    return (
+      <>
+        <p className="py-6 text-center text-sm text-muted-foreground">لا توجد رحلات مفتوحة للحجز حالياً.</p>
+        <DialogFooter>
+          <Button type="button" variant="outline" onClick={onCancel}>
+            إغلاق
+          </Button>
+        </DialogFooter>
+      </>
+    );
+  }
+
+  return (
+    <div className="flex flex-col gap-4">
+      <Field>
+        <FieldLabel htmlFor="booking-trip">الرحلة</FieldLabel>
+        <NativeSelect
+          id="booking-trip"
+          value={tripId}
+          onChange={(e) => setTripId(e.target.value)}
+          className="w-full [&>select]:h-9 [&>select]:bg-card"
+        >
+          <NativeSelectOption value="" disabled>
+            اختر رحلة…
+          </NativeSelectOption>
+          {trips.map((t) => (
+            <NativeSelectOption key={t.id} value={t.id}>
+              {t.tripProgramName} — {formatShortDate(t.takeoffDate)}
+            </NativeSelectOption>
+          ))}
+        </NativeSelect>
+        {trip && (
+          <FieldDescription>
+            المقاعد المتاحة: {formatNumber(trip.availableSeats)}
+            {trip.isInternational && " · رحلة دولية"}
+          </FieldDescription>
+        )}
+      </Field>
+      {trip ? (
+        <BookingForm trip={trip} onCancel={onCancel} onCreated={onCreated} />
+      ) : (
+        <DialogFooter>
+          <Button type="button" variant="outline" onClick={onCancel}>
+            إلغاء
+          </Button>
+          <Button type="button" disabled>
+            تأكيد الحجز
+          </Button>
+        </DialogFooter>
+      )}
+    </div>
   );
 }
 
