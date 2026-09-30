@@ -23,3 +23,9 @@ export interface Booking {
   passports: Passport[];
   createdAt: string;
 }
+
+/** A booking as returned by the bookings list, with the trip it is on. */
+export interface BookingListItem extends Booking {
+  tripName: string;
+  takeoffDate: string;
+}

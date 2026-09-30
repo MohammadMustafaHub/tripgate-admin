@@ -5,6 +5,289 @@ info:
 servers:
   - url: http://localhost:5134/
 paths:
+  /api/trips/Bookings:
+    get:
+      tags:
+        - Bookings
+      parameters:
+        - name: Status
+          in: query
+          description: "Only list bookings in this status: 0 = Pending, 1 = Confirmed, 2 =
+            Cancelled."
+          schema:
+            $ref: "#/components/schemas/BookingStatus"
+        - name: Page
+          in: query
+          description: One-based page number.
+          schema:
+            pattern: ^-?(?:0|[1-9]\d*)$
+            type:
+              - integer
+              - string
+            format: int32
+        - name: PageSize
+          in: query
+          description: Number of bookings per page, at most 100.
+          schema:
+            pattern: ^-?(?:0|[1-9]\d*)$
+            type:
+              - integer
+              - string
+            format: int32
+      responses:
+        "200":
+          description: OK
+          content:
+            text/plain:
+              schema:
+                $ref: "#/components/schemas/PaginatedOfBookingListItemResponse"
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaginatedOfBookingListItemResponse"
+            text/json:
+              schema:
+                $ref: "#/components/schemas/PaginatedOfBookingListItemResponse"
+  /api/trips/trips/{tripId}/bookings:
+    get:
+      tags:
+        - TripBookings
+      parameters:
+        - name: tripId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: Status
+          in: query
+          description: "Only list bookings in this status: 0 = Pending, 1 = Confirmed, 2 =
+            Cancelled."
+          schema:
+            $ref: "#/components/schemas/BookingStatus"
+        - name: Page
+          in: query
+          description: One-based page number.
+          schema:
+            pattern: ^-?(?:0|[1-9]\d*)$
+            type:
+              - integer
+              - string
+            format: int32
+        - name: PageSize
+          in: query
+          description: Number of bookings per page, at most 100.
+          schema:
+            pattern: ^-?(?:0|[1-9]\d*)$
+            type:
+              - integer
+              - string
+            format: int32
+      responses:
+        "200":
+          description: OK
+          content:
+            text/plain:
+              schema:
+                $ref: "#/components/schemas/PaginatedOfBookingListItemResponse"
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaginatedOfBookingListItemResponse"
+            text/json:
+              schema:
+                $ref: "#/components/schemas/PaginatedOfBookingListItemResponse"
+        "404":
+          description: Not Found
+          content:
+            text/plain:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+    post:
+      tags:
+        - TripBookings
+      parameters:
+        - name: tripId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateBookingRequest"
+          text/json:
+            schema:
+              $ref: "#/components/schemas/CreateBookingRequest"
+          application/*+json:
+            schema:
+              $ref: "#/components/schemas/CreateBookingRequest"
+        required: true
+      responses:
+        "201":
+          description: Created
+          content:
+            text/plain:
+              schema:
+                $ref: "#/components/schemas/SuccessOfBookingResponse"
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessOfBookingResponse"
+            text/json:
+              schema:
+                $ref: "#/components/schemas/SuccessOfBookingResponse"
+        "400":
+          description: Bad Request
+          content:
+            text/plain:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+        "404":
+          description: Not Found
+          content:
+            text/plain:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+        "409":
+          description: The trip is closed for booking, has too few seats left, or changed
+            while booking.
+          content:
+            text/plain:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+  /api/trips/trips/{tripId}/bookings/{bookingId}:
+    get:
+      tags:
+        - TripBookings
+      parameters:
+        - name: tripId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: bookingId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: OK
+          content:
+            text/plain:
+              schema:
+                $ref: "#/components/schemas/SuccessOfBookingResponse"
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessOfBookingResponse"
+            text/json:
+              schema:
+                $ref: "#/components/schemas/SuccessOfBookingResponse"
+        "404":
+          description: Not Found
+          content:
+            text/plain:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+  /api/trips/trips/{tripId}/bookings/{bookingId}/status:
+    put:
+      tags:
+        - TripBookings
+      parameters:
+        - name: tripId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: bookingId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateBookingStatusRequest"
+          text/json:
+            schema:
+              $ref: "#/components/schemas/UpdateBookingStatusRequest"
+          application/*+json:
+            schema:
+              $ref: "#/components/schemas/UpdateBookingStatusRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            text/plain:
+              schema:
+                $ref: "#/components/schemas/SuccessOfBookingResponse"
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessOfBookingResponse"
+            text/json:
+              schema:
+                $ref: "#/components/schemas/SuccessOfBookingResponse"
+        "404":
+          description: Not Found
+          content:
+            text/plain:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+        "409":
+          description: The booking cannot move to that status, or the trip changed while
+            updating.
+          content:
+            text/plain:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
   /api/trips/TripPrograms:
     get:
       tags:
@@ -360,7 +643,8 @@ paths:
               schema:
                 $ref: "#/components/schemas/ProblemDetails"
         "409":
-          description: The new seat count is below the seats already reserved.
+          description: The new seat count is below the seats already reserved, or the trip
+            changed while updating.
           content:
             text/plain:
               schema:
@@ -397,7 +681,8 @@ paths:
               schema:
                 $ref: "#/components/schemas/ProblemDetails"
         "409":
-          description: The trip has bookings; deactivate it instead.
+          description: The trip has bookings (deactivate it instead), or it changed while
+            deleting.
           content:
             text/plain:
               schema:
@@ -444,6 +729,18 @@ paths:
             text/json:
               schema:
                 $ref: "#/components/schemas/ProblemDetails"
+        "409":
+          description: The trip changed while updating.
+          content:
+            text/plain:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
   /api/trips/Trips/{id}/deactivate:
     post:
       tags:
@@ -470,6 +767,18 @@ paths:
                 $ref: "#/components/schemas/SuccessOfTripResponse"
         "404":
           description: Not Found
+          content:
+            text/plain:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+        "409":
+          description: The trip changed while updating.
           content:
             text/plain:
               schema:
@@ -1006,6 +1315,52 @@ paths:
                 $ref: "#/components/schemas/ProblemDetails"
 components:
   schemas:
+    BookingListItemResponse:
+      type: object
+      properties:
+        tripName:
+          type: string
+          description: Display name of the trip's program.
+        takeoffDate:
+          type: string
+          description: When the trip departs.
+          format: date-time
+        id:
+          type: string
+          description: Identifier of the booking.
+          format: uuid
+        customerName:
+          type: string
+          description: Name of the customer who booked.
+        phoneNumber:
+          type: string
+          description: Phone number of the customer who booked.
+        reservedSeats:
+          pattern: ^-?(?:0|[1-9]\d*)$
+          type:
+            - integer
+            - string
+          description: Number of seats the booking holds.
+          format: int32
+        status:
+          description: "Status of the booking: 0 = Pending, 1 = Confirmed, 2 = Cancelled."
+          $ref: "#/components/schemas/BookingStatus"
+        cancelledAt:
+          type:
+            - "null"
+            - string
+          description: When the booking was cancelled, if it was.
+          format: date-time
+        passports:
+          type: array
+          items:
+            $ref: "#/components/schemas/PassportResponse"
+          description: Passport data for each seat. Empty for domestic trips.
+        createdAt:
+          type: string
+          description: When the booking was made.
+          format: date-time
+      description: A customer's booking, with the trip it is on.
     BookingResponse:
       type: object
       properties:
@@ -1062,6 +1417,37 @@ components:
           type: string
           description: The replacement password. Must be at least 8 characters.
       description: Changes the password of the signed in account.
+    CreateBookingRequest:
+      required:
+        - customerName
+        - phoneNumber
+        - seats
+      type: object
+      properties:
+        customerName:
+          maxLength: 200
+          type: string
+          description: Name of the customer booking.
+        phoneNumber:
+          pattern: ^9647\d{9}$
+          type: string
+          description: Iraqi phone number of the customer in the format 9647XXXXXXXXX.
+        seats:
+          pattern: ^-?(?:0|[1-9]\d*)$
+          type:
+            - integer
+            - string
+          description: Number of seats to reserve.
+          format: int32
+        passports:
+          type:
+            - "null"
+            - array
+          items:
+            $ref: "#/components/schemas/PassportRequest"
+          description: Passport data for each seat. Required, one per seat, for
+            international trips; ignored otherwise.
+      description: A customer's booking on a trip.
     CreateTenantRequest:
       required:
         - name
@@ -1156,6 +1542,20 @@ components:
           type: string
           description: Account password.
       description: Credentials for signing in to an existing account.
+    PaginatedOfBookingListItemResponse:
+      required:
+        - data
+        - pagination
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/BookingListItemResponse"
+        pagination:
+          $ref: "#/components/schemas/PaginationData"
+        isSuccessful:
+          type: boolean
     PaginatedOfTripProgramResponse:
       required:
         - data
@@ -1219,6 +1619,21 @@ components:
           type: boolean
         hasPreviousPage:
           type: boolean
+    PassportRequest:
+      required:
+        - ownerName
+        - number
+      type: object
+      properties:
+        ownerName:
+          maxLength: 200
+          type: string
+          description: Name on the passport.
+        number:
+          maxLength: 50
+          type: string
+          description: Passport number.
+      description: Passport data of one traveller.
     PassportResponse:
       type: object
       properties:
@@ -1307,6 +1722,17 @@ components:
           type: string
           description: The replacement password. Must be at least 8 characters.
       description: Sets a new password using a password reset token.
+    SuccessOfBookingResponse:
+      required:
+        - data
+      type: object
+      properties:
+        data:
+          oneOf:
+            - type: "null"
+            - $ref: "#/components/schemas/BookingResponse"
+        isSuccessful:
+          type: boolean
     SuccessOfImageResponse:
       required:
         - data
@@ -1773,6 +2199,16 @@ components:
           type: string
           description: What happens during the step.
       description: One step of a program's itinerary.
+    UpdateBookingStatusRequest:
+      required:
+        - status
+      type: object
+      properties:
+        status:
+          description: 1 = Confirmed (pending bookings only) or 2 = Cancelled (releases
+            the seats).
+          $ref: "#/components/schemas/BookingStatus"
+      description: The status to move a booking to.
     UpdateTripRequest:
       required:
         - takeoffDate
@@ -1868,6 +2304,8 @@ components:
 security:
   - Bearer: []
 tags:
+  - name: Bookings
+  - name: TripBookings
   - name: TripPrograms
   - name: Trips
   - name: Tenants

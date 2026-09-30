@@ -63,7 +63,8 @@ export async function createTrip(trip: {
   }
 }
 
-export type UpdateTripError = "NOT_FOUND" | "SEATS_BELOW_RESERVED" | "UNKNOWN_ERROR";
+/** CONFLICT: the new seat count is below the seats already reserved, or the trip changed while updating. */
+export type UpdateTripError = "NOT_FOUND" | "CONFLICT" | "UNKNOWN_ERROR";
 
 export async function updateTrip({
   id,
@@ -82,12 +83,13 @@ export async function updateTrip({
   } catch (error) {
     const status = (error as AxiosError)?.response?.status;
     if (status === 404) return fail("NOT_FOUND");
-    if (status === 409) return fail("SEATS_BELOW_RESERVED");
+    if (status === 409) return fail("CONFLICT");
     return fail("UNKNOWN_ERROR");
   }
 }
 
-export type DeleteTripError = "NOT_FOUND" | "HAS_BOOKINGS" | "UNKNOWN_ERROR";
+/** CONFLICT: the trip has bookings (deactivate it instead), or it changed while deleting. */
+export type DeleteTripError = "NOT_FOUND" | "CONFLICT" | "UNKNOWN_ERROR";
 
 export async function deleteTrip({ id }: { id: string }): Promise<Result<void, DeleteTripError>> {
   try {
@@ -96,12 +98,13 @@ export async function deleteTrip({ id }: { id: string }): Promise<Result<void, D
   } catch (error) {
     const status = (error as AxiosError)?.response?.status;
     if (status === 404) return fail("NOT_FOUND");
-    if (status === 409) return fail("HAS_BOOKINGS");
+    if (status === 409) return fail("CONFLICT");
     return fail("UNKNOWN_ERROR");
   }
 }
 
-export type SetTripActiveError = "NOT_FOUND" | "UNKNOWN_ERROR";
+/** TRIP_CHANGED: the trip changed while updating. */
+export type SetTripActiveError = "NOT_FOUND" | "TRIP_CHANGED" | "UNKNOWN_ERROR";
 
 export async function activateTrip({ id }: { id: string }): Promise<Result<Trip, SetTripActiveError>> {
   try {
@@ -110,6 +113,7 @@ export async function activateTrip({ id }: { id: string }): Promise<Result<Trip,
   } catch (error) {
     const status = (error as AxiosError)?.response?.status;
     if (status === 404) return fail("NOT_FOUND");
+    if (status === 409) return fail("TRIP_CHANGED");
     return fail("UNKNOWN_ERROR");
   }
 }
@@ -121,6 +125,7 @@ export async function deactivateTrip({ id }: { id: string }): Promise<Result<Tri
   } catch (error) {
     const status = (error as AxiosError)?.response?.status;
     if (status === 404) return fail("NOT_FOUND");
+    if (status === 409) return fail("TRIP_CHANGED");
     return fail("UNKNOWN_ERROR");
   }
 }

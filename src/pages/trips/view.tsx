@@ -23,8 +23,7 @@ import {
 import { UNKNOWN_ERROR_MESSAGE } from "@/components/form/form-error";
 import { RemoteImage } from "@/components/remote-image";
 import { StatTile, StatTiles } from "@/components/stat-tile";
-import { BookingsTable } from "@/components/trips/bookings-table";
-import { SeatsMeter } from "@/components/trips/seats-meter";
+import { TripBookings } from "@/components/trips/trip-bookings";
 import { TripStatus } from "@/components/trips/trip-status";
 import {
   AlertDialog,
@@ -43,17 +42,17 @@ import { Spinner } from "@/components/ui/spinner";
 import { toast } from "@/components/ui/toast";
 import { dateParts, formatNumber, formatPrice, formatShortDate } from "@/lib/format";
 import { imageUrl } from "@/lib/images";
-import { BookingStatus, type Booking } from "@/models/booking";
 import type { TripDetails } from "@/models/trip";
 
 const DELETE_ERRORS: Record<DeleteTripError, string> = {
   NOT_FOUND: "لم تعد هذه الرحلة موجودة.",
-  HAS_BOOKINGS: "لا يمكن حذف رحلة عليها حجوزات، يمكنك إيقافها بدلاً من ذلك.",
+  CONFLICT: "تعذّر الحذف: للرحلة حجوزات (يمكنك إيقافها بدلاً من ذلك)، أو أنها عُدّلت أثناء الحذف.",
   UNKNOWN_ERROR: UNKNOWN_ERROR_MESSAGE,
 };
 
 const ACTIVE_ERRORS: Record<SetTripActiveError, string> = {
   NOT_FOUND: "لم تعد هذه الرحلة موجودة.",
+  TRIP_CHANGED: "عُدّلت الرحلة أثناء التحديث. حدّث الصفحة وحاول مجدداً.",
   UNKNOWN_ERROR: UNKNOWN_ERROR_MESSAGE,
 };
 
@@ -108,6 +107,7 @@ function TripDetailsView({ trip }: { trip: TripDetails }) {
     onSuccess: (result) => {
       if (!result.ok) {
         toast.add({ type: "error", title: ACTIVE_ERRORS[result.error] });
+        if (result.error === "TRIP_CHANGED") void queryClient.invalidateQueries({ queryKey: ["trips"] });
         return;
       }
       // The response has no bookings, so refetch the details rather than caching it.
@@ -129,7 +129,6 @@ function TripDetailsView({ trip }: { trip: TripDetails }) {
     },
   });
 
-  const pendingCount = trip.bookings.filter((b) => b.status === BookingStatus.Pending).length;
   const takeoff = dateParts(trip.takeoffDate);
   const closes = dateParts(trip.finalRegistrationDate);
 
@@ -223,39 +222,10 @@ function TripDetailsView({ trip }: { trip: TripDetails }) {
         </StatTiles>
       </div>
 
-      <section className="flex flex-col gap-4">
-        <div className="flex flex-wrap items-baseline justify-between gap-2">
-          <h3 className="text-lg font-semibold">الحجوزات</h3>
-          {trip.bookings.length > 0 && (
-            <p className="text-sm text-muted-foreground">
-              عدد الحجوزات: {formatNumber(trip.bookings.length)}
-              {pendingCount > 0 && ` · قيد الانتظار: ${formatNumber(pendingCount)}`}
-            </p>
-          )}
-        </div>
-        <div className="max-w-2xl">
-          <SeatsMeter reserved={trip.reservedSeats} total={trip.seats} size="lg" />
-        </div>
-        {trip.bookings.length > 0 ? (
-          <BookingsTable
-            bookings={trip.bookings}
-            showPassports={trip.isInternational}
-            onAccept={acceptBooking}
-            onCancel={cancelBooking}
-          />
-        ) : (
-          <p className="border border-dashed px-4 py-8 text-center text-sm text-muted-foreground">
-            لا توجد حجوزات على هذه الرحلة بعد.
-          </p>
-        )}
-      </section>
+      <TripBookings trip={trip} />
     </div>
   );
 }
-
-// Placeholders until the booking endpoints are added to the API.
-function acceptBooking(_booking: Booking) {}
-function cancelBooking(_booking: Booking) {}
 
 function ViewSkeleton() {
   return (

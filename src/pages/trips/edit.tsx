@@ -10,7 +10,8 @@ import { toast } from "@/components/ui/toast";
 
 const ERROR_MESSAGES: Record<UpdateTripError, string> = {
   NOT_FOUND: "لم تعد هذه الرحلة موجودة، ربما حُذفت.",
-  SEATS_BELOW_RESERVED: "لا يمكن أن يقل عدد المقاعد عن عدد المقاعد المحجوزة حالياً.",
+  CONFLICT:
+    "تعذّر الحفظ: إما أن عدد المقاعد أقل من المقاعد المحجوزة حالياً، أو أن الرحلة عُدّلت أثناء الحفظ. حدّث الصفحة وحاول مجدداً.",
   UNKNOWN_ERROR: UNKNOWN_ERROR_MESSAGE,
 };
 

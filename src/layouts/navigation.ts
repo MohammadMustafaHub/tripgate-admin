@@ -1,4 +1,4 @@
-import { LayoutDashboardIcon, MapIcon, SettingsIcon, type LucideIcon } from "lucide-react";
+import { LayoutDashboardIcon, MapIcon, SettingsIcon, TicketIcon, type LucideIcon } from "lucide-react";
 
 export interface NavLeaf {
   title: string;
@@ -41,6 +41,7 @@ export const NAV_GROUPS: NavGroup[] = [
           },
         ],
       },
+      { title: "الحجوزات", icon: TicketIcon, to: "/bookings" },
     ],
   },
   {

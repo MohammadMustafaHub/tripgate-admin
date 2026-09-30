@@ -4,12 +4,12 @@ import { CalendarPlusIcon, CalendarRangeIcon, XIcon } from "lucide-react";
 import { getTripProgram } from "@/api/trip-programs";
 import { listTrips } from "@/api/trips";
 import { ListPagination } from "@/components/list-pagination";
+import { SegmentedTabs } from "@/components/segmented-tabs";
 import { TripCard, TripCardSkeleton } from "@/components/trips/trip-card";
 import { Button } from "@/components/ui/button";
 import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatNumber } from "@/lib/format";
-import { cn } from "@/lib/utils";
 
 const PAGE_SIZE = 12;
 
@@ -113,23 +113,12 @@ export default function TripsListPage() {
       </div>
 
       <div className="flex flex-wrap items-center gap-3">
-        <div role="tablist" aria-label="حالة الرحلة" className="inline-flex rounded-lg bg-muted p-1">
-          {STATUS_FILTERS.map((filter) => (
-            <button
-              key={filter.value}
-              type="button"
-              role="tab"
-              aria-selected={status === filter.value}
-              onClick={() => updateParams({ status: filter.value === "all" ? null : filter.value })}
-              className={cn(
-                "h-7 rounded-md px-3 text-sm font-medium text-muted-foreground transition-colors outline-none hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50",
-                status === filter.value && "bg-card text-foreground shadow-sm",
-              )}
-            >
-              {filter.label}
-            </button>
-          ))}
-        </div>
+        <SegmentedTabs
+          label="حالة الرحلة"
+          options={STATUS_FILTERS}
+          value={status}
+          onChange={(value) => updateParams({ status: value === "all" ? null : value })}
+        />
         {programId && (
           <span className="inline-flex h-8 items-center gap-1.5 rounded-full border bg-card ps-3 pe-1 text-sm">
             <span className="text-muted-foreground">البرنامج:</span>

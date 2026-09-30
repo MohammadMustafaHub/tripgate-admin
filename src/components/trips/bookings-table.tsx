@@ -1,96 +1,167 @@
-import { CheckIcon, IdCardIcon, XIcon } from "lucide-react";
+import { CheckIcon, IdCardIcon, InboxIcon, XIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTitle, PopoverTrigger } from "@/components/ui/popover";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Spinner } from "@/components/ui/spinner";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { formatDateTime, formatNumber } from "@/lib/format";
+import { formatDateTime, formatNumber, formatShortDate } from "@/lib/format";
 import { formatPhoneNumber } from "@/lib/phone";
 import { cn } from "@/lib/utils";
 import { BookingStatus, type Booking } from "@/models/booking";
 import { BookingStatusLabel } from "./booking-status";
 
-/** Bookings on a trip in a square-cornered table with accept / cancel actions. */
+const LOADING_ROWS = 3;
+
+/**
+ * Bookings in a square-cornered table. The header row is always shown; the body shows
+ * placeholder rows while loading and an empty-state row when there is nothing to list.
+ */
 export function BookingsTable({
   bookings,
+  loading = false,
+  showTrip = false,
   showPassports,
+  firstIndex = 1,
+  busyBookingId,
+  emptyMessage,
   onAccept,
   onCancel,
 }: {
-  bookings: Booking[];
+  /** List items also carry their trip, shown in a column when `showTrip` is set. */
+  bookings: (Booking & { tripName?: string; takeoffDate?: string })[];
+  loading?: boolean;
+  showTrip?: boolean;
   /** International trips carry passport data for each seat. */
   showPassports: boolean;
-  onAccept: (booking: Booking) => void;
-  onCancel: (booking: Booking) => void;
+  /** Row number of the first booking, so numbering continues across pages. */
+  firstIndex?: number;
+  /** Booking whose status is being changed; its actions show a spinner. */
+  busyBookingId?: string | null;
+  emptyMessage: string;
+  /** Omit both actions to show a read-only table without the actions column. */
+  onAccept?: (booking: Booking) => void;
+  onCancel?: (booking: Booking) => void;
 }) {
+  const showActions = !!(onAccept || onCancel);
+  const columnCount = 6 + Number(showTrip) + Number(showPassports) + Number(showActions);
+
   return (
     <div className="overflow-hidden border">
       <Table>
         <TableHeader className="bg-muted/70">
           <TableRow className="hover:bg-transparent">
             <TableHead className="w-12 text-center">#</TableHead>
+            {showTrip && <TableHead>الرحلة</TableHead>}
             <TableHead>العميل</TableHead>
             <TableHead>رقم الهاتف</TableHead>
             <TableHead className="text-center">المقاعد</TableHead>
             {showPassports && <TableHead>جوازات السفر</TableHead>}
             <TableHead>الحالة</TableHead>
             <TableHead>تاريخ الحجز</TableHead>
-            <TableHead className="text-end">الإجراءات</TableHead>
+            {showActions && <TableHead className="text-end">الإجراءات</TableHead>}
           </TableRow>
         </TableHeader>
         <TableBody>
-          {bookings.map((booking, index) => {
-            const cancelled = booking.status === BookingStatus.Cancelled;
-            return (
-              <TableRow key={booking.id} className={cn(cancelled && "text-muted-foreground")}>
-                <TableCell className="text-center text-muted-foreground tabular-nums">
-                  {formatNumber(index + 1)}
-                </TableCell>
-                <TableCell className="font-medium">{booking.customerName}</TableCell>
-                <TableCell>
-                  <span dir="ltr" className="tabular-nums">
-                    {formatPhoneNumber(booking.phoneNumber)}
-                  </span>
-                </TableCell>
-                <TableCell className="text-center tabular-nums">{formatNumber(booking.reservedSeats)}</TableCell>
-                {showPassports && (
-                  <TableCell>
-                    <PassportsCell booking={booking} />
+          {loading ? (
+            Array.from({ length: LOADING_ROWS }, (_, i) => (
+              <TableRow key={i} className="hover:bg-transparent">
+                {Array.from({ length: columnCount }, (_, j) => (
+                  <TableCell key={j}>
+                    <Skeleton className="h-4 w-full max-w-28" />
                   </TableCell>
-                )}
-                <TableCell>
-                  <div className="flex flex-col items-start gap-1">
-                    <BookingStatusLabel status={booking.status} />
-                    {booking.cancelledAt && (
-                      <span className="text-xs text-muted-foreground">{formatDateTime(booking.cancelledAt)}</span>
-                    )}
-                  </div>
-                </TableCell>
-                <TableCell className="whitespace-nowrap">{formatDateTime(booking.createdAt)}</TableCell>
-                <TableCell>
-                  <div className="flex justify-end gap-2">
-                    {booking.status === BookingStatus.Pending && (
-                      <Button size="sm" className="rounded-none" onClick={() => onAccept(booking)}>
-                        <CheckIcon />
-                        قبول
-                      </Button>
-                    )}
-                    {!cancelled ? (
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="rounded-none text-destructive hover:text-destructive"
-                        onClick={() => onCancel(booking)}
-                      >
-                        <XIcon />
-                        إلغاء
-                      </Button>
-                    ) : (
-                      <span className="text-muted-foreground">—</span>
-                    )}
-                  </div>
-                </TableCell>
+                ))}
               </TableRow>
-            );
-          })}
+            ))
+          ) : bookings.length === 0 ? (
+            <TableRow className="hover:bg-transparent">
+              <TableCell colSpan={columnCount} className="py-12">
+                <div className="flex flex-col items-center gap-2 text-center text-muted-foreground">
+                  <InboxIcon className="size-6" />
+                  <span className="text-sm">{emptyMessage}</span>
+                </div>
+              </TableCell>
+            </TableRow>
+          ) : (
+            bookings.map((booking, index) => {
+              const cancelled = booking.status === BookingStatus.Cancelled;
+              const busy = busyBookingId === booking.id;
+              return (
+                <TableRow key={booking.id} className={cn(cancelled && "text-muted-foreground")}>
+                  <TableCell className="text-center text-muted-foreground tabular-nums">
+                    {formatNumber(firstIndex + index)}
+                  </TableCell>
+                  {showTrip && (
+                    <TableCell>
+                      <div className="flex flex-col">
+                        <span className="font-medium text-foreground">{booking.tripName}</span>
+                        {booking.takeoffDate && (
+                          <span className="text-xs text-muted-foreground">{formatShortDate(booking.takeoffDate)}</span>
+                        )}
+                      </div>
+                    </TableCell>
+                  )}
+                  <TableCell className="font-medium">{booking.customerName}</TableCell>
+                  <TableCell>
+                    <span dir="ltr" className="tabular-nums">
+                      {formatPhoneNumber(booking.phoneNumber)}
+                    </span>
+                  </TableCell>
+                  <TableCell className="text-center tabular-nums">{formatNumber(booking.reservedSeats)}</TableCell>
+                  {showPassports && (
+                    <TableCell>
+                      <PassportsCell booking={booking} />
+                    </TableCell>
+                  )}
+                  <TableCell>
+                    <div className="flex flex-col items-start gap-1">
+                      <BookingStatusLabel status={booking.status} />
+                      {booking.cancelledAt && (
+                        <span className="text-xs text-muted-foreground">{formatDateTime(booking.cancelledAt)}</span>
+                      )}
+                    </div>
+                  </TableCell>
+                  <TableCell className="whitespace-nowrap">{formatDateTime(booking.createdAt)}</TableCell>
+                  {showActions && (
+                    <TableCell>
+                      <div className="flex justify-end gap-2">
+                        {busy ? (
+                          <Spinner className="my-1.5 text-muted-foreground" />
+                        ) : cancelled ? (
+                          <span className="text-muted-foreground">—</span>
+                        ) : (
+                          <>
+                            {onAccept && booking.status === BookingStatus.Pending && (
+                              <Button
+                                size="sm"
+                                className="rounded-none"
+                                disabled={!!busyBookingId}
+                                onClick={() => onAccept(booking)}
+                              >
+                                <CheckIcon />
+                                قبول
+                              </Button>
+                            )}
+                            {onCancel && (
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="rounded-none text-destructive hover:text-destructive"
+                                disabled={!!busyBookingId}
+                                onClick={() => onCancel(booking)}
+                              >
+                                <XIcon />
+                                إلغاء
+                              </Button>
+                            )}
+                          </>
+                        )}
+                      </div>
+                    </TableCell>
+                  )}
+                </TableRow>
+              );
+            })
+          )}
         </TableBody>
       </Table>
     </div>
@@ -102,9 +173,7 @@ function PassportsCell({ booking }: { booking: Booking }) {
 
   return (
     <Popover>
-      <PopoverTrigger
-        render={<Button variant="ghost" size="sm" className="-ms-2 rounded-none" />}
-      >
+      <PopoverTrigger render={<Button variant="ghost" size="sm" className="-ms-2 rounded-none" />}>
         <IdCardIcon />
         عرض ({formatNumber(booking.passports.length)})
       </PopoverTrigger>
