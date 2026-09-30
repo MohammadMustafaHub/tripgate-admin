@@ -293,13 +293,13 @@ paths:
           content:
             text/plain:
               schema:
-                $ref: "#/components/schemas/SuccessOfTripResponse"
+                $ref: "#/components/schemas/SuccessOfTripDetailsResponse"
             application/json:
               schema:
-                $ref: "#/components/schemas/SuccessOfTripResponse"
+                $ref: "#/components/schemas/SuccessOfTripDetailsResponse"
             text/json:
               schema:
-                $ref: "#/components/schemas/SuccessOfTripResponse"
+                $ref: "#/components/schemas/SuccessOfTripDetailsResponse"
         "404":
           description: Not Found
           content:
@@ -1006,6 +1006,48 @@ paths:
                 $ref: "#/components/schemas/ProblemDetails"
 components:
   schemas:
+    BookingResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Identifier of the booking.
+          format: uuid
+        customerName:
+          type: string
+          description: Name of the customer who booked.
+        phoneNumber:
+          type: string
+          description: Phone number of the customer who booked.
+        reservedSeats:
+          pattern: ^-?(?:0|[1-9]\d*)$
+          type:
+            - integer
+            - string
+          description: Number of seats the booking holds.
+          format: int32
+        status:
+          description: "Status of the booking: 0 = Pending, 1 = Confirmed, 2 = Cancelled."
+          $ref: "#/components/schemas/BookingStatus"
+        cancelledAt:
+          type:
+            - "null"
+            - string
+          description: When the booking was cancelled, if it was.
+          format: date-time
+        passports:
+          type: array
+          items:
+            $ref: "#/components/schemas/PassportResponse"
+          description: Passport data for each seat. Empty for domestic trips.
+        createdAt:
+          type: string
+          description: When the booking was made.
+          format: date-time
+      description: A customer's booking on a trip.
+    BookingStatus:
+      type: integer
+      description: "Status of the booking: 0 = Pending, 1 = Confirmed, 2 = Cancelled."
     ChangePasswordRequest:
       required:
         - currentPassword
@@ -1177,6 +1219,16 @@ components:
           type: boolean
         hasPreviousPage:
           type: boolean
+    PassportResponse:
+      type: object
+      properties:
+        ownerName:
+          type: string
+          description: Name on the passport.
+        number:
+          type: string
+          description: Passport number.
+      description: Passport data of one traveller.
     PasswordResetTokenResponse:
       required:
         - token
@@ -1323,6 +1375,17 @@ components:
             - $ref: "#/components/schemas/TokensResponse"
         isSuccessful:
           type: boolean
+    SuccessOfTripDetailsResponse:
+      required:
+        - data
+      type: object
+      properties:
+        data:
+          oneOf:
+            - type: "null"
+            - $ref: "#/components/schemas/TripDetailsResponse"
+        isSuccessful:
+          type: boolean
     SuccessOfTripProgramResponse:
       required:
         - data
@@ -1412,6 +1475,76 @@ components:
           type: string
           description: Long-lived token used to obtain a new access token. Shown once.
       description: A token pair reissued so the access token carries the caller's tenant.
+    TripDetailsResponse:
+      type: object
+      properties:
+        bookings:
+          type: array
+          items:
+            $ref: "#/components/schemas/BookingResponse"
+          description: Bookings on the trip, oldest first. Cancelled bookings are kept for
+            history.
+        id:
+          type: string
+          description: Identifier of the trip.
+          format: uuid
+        tripProgramId:
+          type: string
+          description: Program the trip is scheduled from.
+          format: uuid
+        tripProgramName:
+          type: string
+          description: Display name of the program.
+        takeoffDate:
+          type: string
+          description: When the trip departs.
+          format: date-time
+        finalRegistrationDate:
+          type: string
+          description: When bookings close.
+          format: date-time
+        pricePerSeat:
+          pattern: ^-?(?:0|[1-9]\d*)(?:\.\d+)?$
+          type:
+            - number
+            - string
+          description: Price per seat.
+          format: double
+        seats:
+          pattern: ^-?(?:0|[1-9]\d*)$
+          type:
+            - integer
+            - string
+          description: Total number of seats.
+          format: int32
+        reservedSeats:
+          pattern: ^-?(?:0|[1-9]\d*)$
+          type:
+            - integer
+            - string
+          description: Seats held by pending and confirmed bookings.
+          format: int32
+        availableSeats:
+          pattern: ^-?(?:0|[1-9]\d*)$
+          type:
+            - integer
+            - string
+          description: Seats still available to book.
+          format: int32
+        isInternational:
+          type: boolean
+          description: Whether bookings must carry passport data.
+        isActive:
+          type: boolean
+          description: Whether the trip is on sale.
+        isOpenForBooking:
+          type: boolean
+          description: Whether the trip is active and registration has not closed.
+        createdAt:
+          type: string
+          description: When the trip was created.
+          format: date-time
+      description: A scheduled departure of a trip program, with its customers' bookings.
     TripProgramRequest:
       required:
         - name

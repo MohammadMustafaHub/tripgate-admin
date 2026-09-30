@@ -1,3 +1,5 @@
+import type { Booking } from "./booking";
+
 export interface Trip {
   id: string;
   tripProgramId: string;
@@ -12,4 +14,9 @@ export interface Trip {
   isActive: boolean;
   isOpenForBooking: boolean;
   createdAt: string;
+}
+
+/** A trip with its customers' bookings, oldest first; cancelled ones are kept for history. */
+export interface TripDetails extends Trip {
+  bookings: Booking[];
 }

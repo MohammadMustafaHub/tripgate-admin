@@ -1,6 +1,6 @@
 import type { AxiosError } from "axios";
 import { fail, ok, type Result } from "@/lib/result";
-import type { Trip } from "@/models/trip";
+import type { Trip, TripDetails } from "@/models/trip";
 import client from "./client";
 import type { PaginatedResponse, SuccessResponse } from "./responses";
 
@@ -29,9 +29,9 @@ export async function listTrips({
 
 export type GetTripError = "NOT_FOUND" | "UNKNOWN_ERROR";
 
-export async function getTrip({ id }: { id: string }): Promise<Result<Trip, GetTripError>> {
+export async function getTrip({ id }: { id: string }): Promise<Result<TripDetails, GetTripError>> {
   try {
-    const response = await client.get<SuccessResponse<Trip>>(`/trips/Trips/${id}`);
+    const response = await client.get<SuccessResponse<TripDetails>>(`/trips/Trips/${id}`);
     return ok(response.data.data);
   } catch (error) {
     const status = (error as AxiosError)?.response?.status;

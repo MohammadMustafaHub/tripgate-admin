@@ -23,7 +23,7 @@ import {
 import { UNKNOWN_ERROR_MESSAGE } from "@/components/form/form-error";
 import { RemoteImage } from "@/components/remote-image";
 import { StatTile, StatTiles } from "@/components/stat-tile";
-import { ItineraryStepper } from "@/components/trip-programs/itinerary-stepper";
+import { BookingsTable } from "@/components/trips/bookings-table";
 import { SeatsMeter } from "@/components/trips/seats-meter";
 import { TripStatus } from "@/components/trips/trip-status";
 import {
@@ -43,7 +43,8 @@ import { Spinner } from "@/components/ui/spinner";
 import { toast } from "@/components/ui/toast";
 import { dateParts, formatNumber, formatPrice, formatShortDate } from "@/lib/format";
 import { imageUrl } from "@/lib/images";
-import type { Trip } from "@/models/trip";
+import { BookingStatus, type Booking } from "@/models/booking";
+import type { TripDetails } from "@/models/trip";
 
 const DELETE_ERRORS: Record<DeleteTripError, string> = {
   NOT_FOUND: "لم تعد هذه الرحلة موجودة.",
@@ -89,10 +90,10 @@ export default function TripViewPage() {
     );
   }
 
-  return <TripDetails trip={result.value} />;
+  return <TripDetailsView trip={result.value} />;
 }
 
-function TripDetails({ trip }: { trip: Trip }) {
+function TripDetailsView({ trip }: { trip: TripDetails }) {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
@@ -101,7 +102,6 @@ function TripDetails({ trip }: { trip: Trip }) {
     queryFn: () => getTripProgram({ id: trip.tripProgramId }),
   });
   const program = programQuery.data?.ok ? programQuery.data.value : null;
-  const steps = program ? [...program.steps].sort((a, b) => a.position - b.position) : [];
 
   const toggleActive = useMutation({
     mutationFn: trip.isActive ? deactivateTrip : activateTrip,
@@ -110,8 +110,8 @@ function TripDetails({ trip }: { trip: Trip }) {
         toast.add({ type: "error", title: ACTIVE_ERRORS[result.error] });
         return;
       }
-      queryClient.setQueryData(["trips", "detail", trip.id], result);
-      void queryClient.invalidateQueries({ queryKey: ["trips", "list"] });
+      // The response has no bookings, so refetch the details rather than caching it.
+      void queryClient.invalidateQueries({ queryKey: ["trips"] });
       toast.add({ type: "success", title: result.value.isActive ? "تم تفعيل الرحلة." : "تم إيقاف الرحلة." });
     },
   });
@@ -129,6 +129,7 @@ function TripDetails({ trip }: { trip: Trip }) {
     },
   });
 
+  const pendingCount = trip.bookings.filter((b) => b.status === BookingStatus.Pending).length;
   const takeoff = dateParts(trip.takeoffDate);
   const closes = dateParts(trip.finalRegistrationDate);
 
@@ -136,6 +137,15 @@ function TripDetails({ trip }: { trip: Trip }) {
     <div className="flex flex-col gap-6">
       <div className="flex flex-wrap items-center gap-3">
         <h2 className="min-w-0 flex-1 text-2xl font-bold">{trip.tripProgramName}</h2>
+        <Button
+          variant="link"
+          className="px-2"
+          render={<Link to={`/trip-programs/${trip.tripProgramId}`} />}
+          nativeButton={false}
+        >
+          عرض البرنامج
+          <ArrowUpLeftIcon />
+        </Button>
         <Button
           variant="outline"
           disabled={toggleActive.isPending}
@@ -213,39 +223,39 @@ function TripDetails({ trip }: { trip: Trip }) {
         </StatTiles>
       </div>
 
-      <section className="flex flex-col gap-3">
-        <h3 className="text-lg font-semibold">الحجوزات</h3>
+      <section className="flex flex-col gap-4">
+        <div className="flex flex-wrap items-baseline justify-between gap-2">
+          <h3 className="text-lg font-semibold">الحجوزات</h3>
+          {trip.bookings.length > 0 && (
+            <p className="text-sm text-muted-foreground">
+              عدد الحجوزات: {formatNumber(trip.bookings.length)}
+              {pendingCount > 0 && ` · قيد الانتظار: ${formatNumber(pendingCount)}`}
+            </p>
+          )}
+        </div>
         <div className="max-w-2xl">
           <SeatsMeter reserved={trip.reservedSeats} total={trip.seats} size="lg" />
         </div>
-      </section>
-
-      <section className="flex flex-col gap-4">
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <h3 className="text-lg font-semibold">مسار الرحلة</h3>
-          <Button
-            variant="link"
-            className="h-auto px-0"
-            render={<Link to={`/trip-programs/${trip.tripProgramId}`} />}
-            nativeButton={false}
-          >
-            عرض البرنامج
-            <ArrowUpLeftIcon />
-          </Button>
-        </div>
-        {programQuery.isPending ? (
-          <Skeleton className="h-20 w-full" />
-        ) : steps.length > 0 ? (
-          <ItineraryStepper steps={steps} startDate={trip.takeoffDate} />
+        {trip.bookings.length > 0 ? (
+          <BookingsTable
+            bookings={trip.bookings}
+            showPassports={trip.isInternational}
+            onAccept={acceptBooking}
+            onCancel={cancelBooking}
+          />
         ) : (
-          <p className="text-sm text-muted-foreground">
-            {program ? "لم تُضف مراحل لبرنامج هذه الرحلة." : "تعذّر تحميل مسار البرنامج."}
+          <p className="border border-dashed px-4 py-8 text-center text-sm text-muted-foreground">
+            لا توجد حجوزات على هذه الرحلة بعد.
           </p>
         )}
       </section>
     </div>
   );
 }
+
+// Placeholders until the booking endpoints are added to the API.
+function acceptBooking(_booking: Booking) {}
+function cancelBooking(_booking: Booking) {}
 
 function ViewSkeleton() {
   return (
