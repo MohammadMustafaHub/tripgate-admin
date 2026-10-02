@@ -50,6 +50,18 @@ export function formatRelativeDay(value: string | Date): string {
   return relativeFormatter.format(days, "day");
 }
 
+const compactFormatter = new Intl.NumberFormat(LOCALE, { notation: "compact", maximumFractionDigits: 1 });
+
+/** Short form for large numbers, e.g. 12500000 -> "12.5 مليون". */
+export function formatCompact(value: number): string {
+  return compactFormatter.format(value);
+}
+
+/** Short Iraqi dinar amount, e.g. "12.5 مليون د.ع" */
+export function formatCompactPrice(value: number): string {
+  return `${compactFormatter.format(value)} د.ع`;
+}
+
 /** Iraqi dinar amount, e.g. "250,000 د.ع" */
 export function formatPrice(value: number): string {
   return `${numberFormatter.format(value)} د.ع`;

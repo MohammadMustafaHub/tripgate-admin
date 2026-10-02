@@ -51,6 +51,10 @@
   --sidebar-accent-foreground: oklch(1 0 0);
   --sidebar-border: oklch(0.34 0.01 265);
   --sidebar-ring: oklch(0.62 0.15 259);
+
+  /* Earnings chart series: categorical slots 1-2, validated for CVD + contrast. */
+  --earnings-earned: #2a78d6;
+  --earnings-projected: #eb6834;
 }
 
 @theme inline {
@@ -98,6 +102,8 @@
 }
 
 .dark {
+  --earnings-earned: #3987e5;
+  --earnings-projected: #d95926;
   --background: oklch(0.145 0 0);
   --foreground: oklch(0.985 0 0);
   --card: oklch(0.205 0 0);

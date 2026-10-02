@@ -1313,11 +1313,141 @@ paths:
             text/json:
               schema:
                 $ref: "#/components/schemas/ProblemDetails"
+  /api/Analytics/trips:
+    get:
+      tags:
+        - Analytics
+      responses:
+        "200":
+          description: OK
+          content:
+            text/plain:
+              schema:
+                $ref: "#/components/schemas/SuccessOfTripCountsResponse"
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessOfTripCountsResponse"
+            text/json:
+              schema:
+                $ref: "#/components/schemas/SuccessOfTripCountsResponse"
+  /api/Analytics/earnings:
+    get:
+      tags:
+        - Analytics
+      parameters:
+        - name: From
+          in: query
+          description: Start of the time frame (inclusive). Must include a time zone.
+          schema:
+            type: string
+            format: date-time
+        - name: To
+          in: query
+          description: End of the time frame (exclusive). Must include a time zone.
+          schema:
+            type: string
+            format: date-time
+      responses:
+        "200":
+          description: OK
+          content:
+            text/plain:
+              schema:
+                $ref: "#/components/schemas/SuccessOfEarningsResponse"
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessOfEarningsResponse"
+            text/json:
+              schema:
+                $ref: "#/components/schemas/SuccessOfEarningsResponse"
+  /api/Analytics/earnings/timeline:
+    get:
+      tags:
+        - Analytics
+      parameters:
+        - name: From
+          in: query
+          description: Start of the time frame (inclusive). Must include a time zone.
+          schema:
+            type: string
+            format: date-time
+        - name: To
+          in: query
+          description: End of the time frame (exclusive). Must include a time zone.
+          schema:
+            type: string
+            format: date-time
+        - name: Interval
+          in: query
+          description: "Size of each period: Day, Week (starting Monday) or Month."
+          schema:
+            $ref: "#/components/schemas/EarningsInterval"
+        - name: TimeZone
+          in: query
+          description: IANA time zone the periods are aligned to, e.g. Asia/Baghdad.
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            text/plain:
+              schema:
+                $ref: "#/components/schemas/SuccessOfListOfEarningsPeriodResponse"
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessOfListOfEarningsPeriodResponse"
+            text/json:
+              schema:
+                $ref: "#/components/schemas/SuccessOfListOfEarningsPeriodResponse"
+  /api/Analytics/earnings/top-programs:
+    get:
+      tags:
+        - Analytics
+      parameters:
+        - name: From
+          in: query
+          description: Start of the time frame (inclusive). Must include a time zone.
+          schema:
+            type: string
+            format: date-time
+        - name: To
+          in: query
+          description: End of the time frame (exclusive). Must include a time zone.
+          schema:
+            type: string
+            format: date-time
+        - name: Limit
+          in: query
+          description: Number of programs to return, at most 20.
+          schema:
+            pattern: ^-?(?:0|[1-9]\d*)$
+            type:
+              - integer
+              - string
+            format: int32
+      responses:
+        "200":
+          description: OK
+          content:
+            text/plain:
+              schema:
+                $ref: "#/components/schemas/SuccessOfListOfProgramEarningsResponse"
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessOfListOfProgramEarningsResponse"
+            text/json:
+              schema:
+                $ref: "#/components/schemas/SuccessOfListOfProgramEarningsResponse"
 components:
   schemas:
     BookingListItemResponse:
       type: object
       properties:
+        tripId:
+          type: string
+          description: The trip id of this booking.
+          format: uuid
         tripName:
           type: string
           description: Display name of the trip's program.
@@ -1342,6 +1472,20 @@ components:
             - string
           description: Number of seats the booking holds.
           format: int32
+        pricePerSeat:
+          pattern: ^-?(?:0|[1-9]\d*)(?:\.\d+)?$
+          type:
+            - number
+            - string
+          description: Price per seat at the time the booking was made.
+          format: double
+        totalPrice:
+          pattern: ^-?(?:0|[1-9]\d*)(?:\.\d+)?$
+          type:
+            - number
+            - string
+          description: "Total price of the booking: price per seat times reserved seats."
+          format: double
         status:
           description: "Status of the booking: 0 = Pending, 1 = Confirmed, 2 = Cancelled."
           $ref: "#/components/schemas/BookingStatus"
@@ -1381,6 +1525,20 @@ components:
             - string
           description: Number of seats the booking holds.
           format: int32
+        pricePerSeat:
+          pattern: ^-?(?:0|[1-9]\d*)(?:\.\d+)?$
+          type:
+            - number
+            - string
+          description: Price per seat at the time the booking was made.
+          format: double
+        totalPrice:
+          pattern: ^-?(?:0|[1-9]\d*)(?:\.\d+)?$
+          type:
+            - number
+            - string
+          description: "Total price of the booking: price per seat times reserved seats."
+          format: double
         status:
           description: "Status of the booking: 0 = Pending, 1 = Confirmed, 2 = Cancelled."
           $ref: "#/components/schemas/BookingStatus"
@@ -1502,6 +1660,82 @@ components:
           description: Number of seats. Defaults to the program's seat count when omitted.
           format: int32
       description: A departure to schedule from a trip program.
+    EarningsInterval:
+      type: integer
+    EarningsPeriodResponse:
+      required:
+        - periodStart
+        - earned
+        - projected
+      type: object
+      properties:
+        periodStart:
+          type: string
+          description: Start of the period in the requested time zone.
+          format: date-time
+        earned:
+          pattern: ^-?(?:0|[1-9]\d*)(?:\.\d+)?$
+          type:
+            - number
+            - string
+          description: Confirmed bookings on trips that have already taken off.
+          format: double
+        projected:
+          pattern: ^-?(?:0|[1-9]\d*)(?:\.\d+)?$
+          type:
+            - number
+            - string
+          description: Earned plus confirmed and pending bookings on trips that have not
+            taken off yet.
+          format: double
+      description: Earnings from trips taking off within one period of the timeline.
+    EarningsResponse:
+      required:
+        - from
+        - to
+        - earned
+        - upcomingConfirmed
+        - upcomingPending
+        - projected
+      type: object
+      properties:
+        from:
+          type: string
+          description: Start of the time frame (inclusive).
+          format: date-time
+        to:
+          type: string
+          description: End of the time frame (exclusive).
+          format: date-time
+        earned:
+          pattern: ^-?(?:0|[1-9]\d*)(?:\.\d+)?$
+          type:
+            - number
+            - string
+          description: Confirmed bookings on trips that have already taken off.
+          format: double
+        upcomingConfirmed:
+          pattern: ^-?(?:0|[1-9]\d*)(?:\.\d+)?$
+          type:
+            - number
+            - string
+          description: Confirmed bookings on trips that have not taken off yet.
+          format: double
+        upcomingPending:
+          pattern: ^-?(?:0|[1-9]\d*)(?:\.\d+)?$
+          type:
+            - number
+            - string
+          description: Pending bookings on trips that have not taken off yet.
+          format: double
+        projected:
+          pattern: ^-?(?:0|[1-9]\d*)(?:\.\d+)?$
+          type:
+            - number
+            - string
+          description: Earned plus upcoming confirmed and pending bookings.
+          format: double
+      description: Earnings from trips taking off within a time frame.
     ForgotPasswordRequest:
       required:
         - phoneNumber
@@ -1679,6 +1913,46 @@ components:
           type:
             - "null"
             - string
+    ProgramEarningsResponse:
+      required:
+        - tripProgramId
+        - name
+        - earned
+        - projected
+        - bookedSeats
+      type: object
+      properties:
+        tripProgramId:
+          type: string
+          description: Identifier of the program.
+          format: uuid
+        name:
+          type: string
+          description: Display name of the program.
+        earned:
+          pattern: ^-?(?:0|[1-9]\d*)(?:\.\d+)?$
+          type:
+            - number
+            - string
+          description: Confirmed bookings on the program's trips that have already taken
+            off.
+          format: double
+        projected:
+          pattern: ^-?(?:0|[1-9]\d*)(?:\.\d+)?$
+          type:
+            - number
+            - string
+          description: Earned plus confirmed and pending bookings on trips that have not
+            taken off yet.
+          format: double
+        bookedSeats:
+          pattern: ^-?(?:0|[1-9]\d*)$
+          type:
+            - integer
+            - string
+          description: Seats held by pending and confirmed bookings on the program's trips.
+          format: int32
+      description: Earnings of one trip program within a time frame.
     RefreshTokenRequest:
       required:
         - refreshToken
@@ -1733,6 +2007,17 @@ components:
             - $ref: "#/components/schemas/BookingResponse"
         isSuccessful:
           type: boolean
+    SuccessOfEarningsResponse:
+      required:
+        - data
+      type: object
+      properties:
+        data:
+          oneOf:
+            - type: "null"
+            - $ref: "#/components/schemas/EarningsResponse"
+        isSuccessful:
+          type: boolean
     SuccessOfImageResponse:
       required:
         - data
@@ -1742,6 +2027,19 @@ components:
           oneOf:
             - type: "null"
             - $ref: "#/components/schemas/ImageResponse"
+        isSuccessful:
+          type: boolean
+    SuccessOfListOfEarningsPeriodResponse:
+      required:
+        - data
+      type: object
+      properties:
+        data:
+          type:
+            - "null"
+            - array
+          items:
+            $ref: "#/components/schemas/EarningsPeriodResponse"
         isSuccessful:
           type: boolean
     SuccessOfListOfImageResponse:
@@ -1755,6 +2053,19 @@ components:
             - array
           items:
             $ref: "#/components/schemas/ImageResponse"
+        isSuccessful:
+          type: boolean
+    SuccessOfListOfProgramEarningsResponse:
+      required:
+        - data
+      type: object
+      properties:
+        data:
+          type:
+            - "null"
+            - array
+          items:
+            $ref: "#/components/schemas/ProgramEarningsResponse"
         isSuccessful:
           type: boolean
     SuccessOfPasswordResetTokenResponse:
@@ -1799,6 +2110,17 @@ components:
           oneOf:
             - type: "null"
             - $ref: "#/components/schemas/TokensResponse"
+        isSuccessful:
+          type: boolean
+    SuccessOfTripCountsResponse:
+      required:
+        - data
+      type: object
+      properties:
+        data:
+          oneOf:
+            - type: "null"
+            - $ref: "#/components/schemas/TripCountsResponse"
         isSuccessful:
           type: boolean
     SuccessOfTripDetailsResponse:
@@ -1901,6 +2223,35 @@ components:
           type: string
           description: Long-lived token used to obtain a new access token. Shown once.
       description: A token pair reissued so the access token carries the caller's tenant.
+    TripCountsResponse:
+      required:
+        - activeTrips
+        - stoppedTrips
+        - completedTrips
+      type: object
+      properties:
+        activeTrips:
+          pattern: ^-?(?:0|[1-9]\d*)$
+          type:
+            - integer
+            - string
+          description: Trips on sale that have not departed yet.
+          format: int32
+        stoppedTrips:
+          pattern: ^-?(?:0|[1-9]\d*)$
+          type:
+            - integer
+            - string
+          description: Trips taken off sale that have not departed yet.
+          format: int32
+        completedTrips:
+          pattern: ^-?(?:0|[1-9]\d*)$
+          type:
+            - integer
+            - string
+          description: Trips whose takeoff date has passed.
+          format: int32
+      description: Current number of trips by state.
     TripDetailsResponse:
       type: object
       properties:
@@ -2315,3 +2666,4 @@ tags:
   - name: Tokens
   - name: Users
   - name: Verification
+  - name: Analytics

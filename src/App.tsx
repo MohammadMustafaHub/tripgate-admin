@@ -7,6 +7,7 @@ import ForgotPasswordPage from "@/pages/auth/forgot-password";
 import LoginPage from "@/pages/auth/login";
 import RegisterPage from "@/pages/auth/register";
 import VerifyPage from "@/pages/auth/verify";
+import AnalyticsPage from "@/pages/analytics/view";
 import BookingsListPage from "@/pages/bookings/list";
 import DashboardView from "@/pages/dashboard/view";
 import PlaceholderPage from "@/pages/placeholder";
@@ -60,6 +61,7 @@ export default function App() {
                 <Route path=":id/edit" element={<TripEditPage />} />
               </Route>
               <Route path="bookings" element={<BookingsListPage />} />
+              <Route path="analytics" element={<AnalyticsPage />} />
               <Route path="settings/tenant" element={<PlaceholderPage />} />
               <Route path="settings/account" element={<PlaceholderPage />} />
             </Route>
