@@ -1,10 +1,13 @@
 import { ChartColumnIcon, LayoutDashboardIcon, MapIcon, SettingsIcon, TicketIcon, type LucideIcon } from "lucide-react";
+import { Permission, hasPermission } from "@/lib/permissions";
 
 export interface NavLeaf {
   title: string;
   to: string;
   /** Breadcrumb titles for pages under `to`, keyed by the next path segment; "*" matches any id. */
   subPages?: Record<string, string>;
+  /** Hidden from users without it; omit for pages every tenant member can open. */
+  permission?: Permission;
 }
 
 export interface NavItem {
@@ -13,6 +16,8 @@ export interface NavItem {
   /** Set for a direct link; omit when the item only groups `children`. */
   to?: string;
   children?: NavLeaf[];
+  /** Hidden from users without it; omit for pages every tenant member can open. */
+  permission?: Permission;
 }
 
 export interface NavGroup {
@@ -41,8 +46,8 @@ export const NAV_GROUPS: NavGroup[] = [
           },
         ],
       },
-      { title: "الحجوزات", icon: TicketIcon, to: "/bookings" },
-      { title: "التحليلات", icon: ChartColumnIcon, to: "/analytics" },
+      { title: "الحجوزات", icon: TicketIcon, to: "/bookings", permission: Permission.ViewBookings },
+      { title: "التحليلات", icon: ChartColumnIcon, to: "/analytics", permission: Permission.ViewStatistics },
     ],
   },
   {
@@ -54,11 +59,29 @@ export const NAV_GROUPS: NavGroup[] = [
         children: [
           { title: "المؤسسة", to: "/settings/tenant" },
           { title: "الحساب", to: "/settings/account" },
+          {
+            title: "الموظفون",
+            to: "/settings/employees",
+            subPages: { new: "إضافة موظف" },
+            permission: Permission.ManageEmployees,
+          },
         ],
       },
     ],
   },
 ];
+
+/** The navigation with the entries `roles` cannot open removed, and groups left empty dropped. */
+export function navGroupsFor(roles: readonly string[]): NavGroup[] {
+  const allowed = (entry: { permission?: Permission }) => !entry.permission || hasPermission(roles, entry.permission);
+  return NAV_GROUPS.map((group) => ({
+    ...group,
+    items: group.items
+      .filter(allowed)
+      .map((item) => (item.children ? { ...item, children: item.children.filter(allowed) } : item))
+      .filter((item) => !item.children || item.children.length > 0),
+  })).filter((group) => group.items.length > 0);
+}
 
 /** Whether `pathname` is `to` itself or a page nested under it. */
 export function isNavActive(pathname: string, to: string): boolean {

@@ -9,8 +9,10 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyTitle } from "@/components/ui/empty";
 import { Skeleton } from "@/components/ui/skeleton";
+import { usePermission } from "@/hooks/use-permission";
 import { imageUrl } from "@/lib/images";
 import { DAY_FORMS, formatNumber, formatPrice, formatTransport, pluralize } from "@/lib/format";
+import { Permission } from "@/lib/permissions";
 import type { TripProgram } from "@/models/trip-program";
 
 export default function TripProgramViewPage() {
@@ -51,6 +53,8 @@ export default function TripProgramViewPage() {
 
 function ProgramDetails({ program }: { program: TripProgram }) {
   const steps = [...program.steps].sort((a, b) => a.position - b.position);
+  const canManage = usePermission(Permission.ManageTripPrograms);
+  const canSchedule = usePermission(Permission.ManageTrips);
 
   return (
     <div className="flex flex-col gap-6">
@@ -60,14 +64,18 @@ function ProgramDetails({ program }: { program: TripProgram }) {
           <CalendarRangeIcon />
           الرحلات المجدولة
         </Button>
-        <Button variant="outline" render={<Link to={`/trip-programs/${program.id}/edit`} />} nativeButton={false}>
-          <PencilIcon />
-          تعديل
-        </Button>
-        <Button render={<Link to={`/trips/new?program=${program.id}`} />} nativeButton={false}>
-          <CalendarPlusIcon />
-          جدولة رحلة
-        </Button>
+        {canManage && (
+          <Button variant="outline" render={<Link to={`/trip-programs/${program.id}/edit`} />} nativeButton={false}>
+            <PencilIcon />
+            تعديل
+          </Button>
+        )}
+        {canSchedule && (
+          <Button render={<Link to={`/trips/new?program=${program.id}`} />} nativeButton={false}>
+            <CalendarPlusIcon />
+            جدولة رحلة
+          </Button>
+        )}
       </div>
 
       <div className="grid gap-4 lg:grid-cols-2">

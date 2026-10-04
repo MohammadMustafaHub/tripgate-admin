@@ -9,7 +9,9 @@ import { TripCard, TripCardSkeleton } from "@/components/trips/trip-card";
 import { Button } from "@/components/ui/button";
 import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty";
 import { Skeleton } from "@/components/ui/skeleton";
+import { usePermission } from "@/hooks/use-permission";
 import { formatNumber } from "@/lib/format";
+import { Permission } from "@/lib/permissions";
 
 const PAGE_SIZE = 12;
 
@@ -66,7 +68,8 @@ export default function TripsListPage() {
     document.querySelector("[data-slot=sidebar-inset]")?.scrollTo({ top: 0 });
   };
 
-  const addButton = (
+  const canManage = usePermission(Permission.ManageTrips);
+  const addButton = canManage && (
     <Button
       render={<Link to={programId ? `/trips/new?program=${programId}` : "/trips/new"} />}
       nativeButton={false}
@@ -151,10 +154,12 @@ export default function TripsListPage() {
             <EmptyDescription>
               {filtered
                 ? "جرّب تغيير عوامل التصفية لعرض رحلات أخرى."
-                : "جدول رحلة من أحد برامجك لتصبح متاحة للحجز من قِبل عملائك."}
+                : canManage
+                  ? "جدول رحلة من أحد برامجك لتصبح متاحة للحجز من قِبل عملائك."
+                  : "لم تُجدول أي رحلات لمؤسستك حتى الآن."}
             </EmptyDescription>
           </EmptyHeader>
-          <EmptyContent>{filtered ? null : addButton}</EmptyContent>
+          {!filtered && addButton && <EmptyContent>{addButton}</EmptyContent>}
         </Empty>
       ) : (
         <div className="grid gap-4 xl:grid-cols-2">

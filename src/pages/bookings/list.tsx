@@ -14,7 +14,9 @@ import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select"
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "@/components/ui/toast";
 import { useBookingActions } from "@/hooks/use-booking-actions";
+import { usePermission } from "@/hooks/use-permission";
 import { formatNumber, formatShortDate } from "@/lib/format";
+import { Permission } from "@/lib/permissions";
 import { BookingStatus } from "@/models/booking";
 
 const PAGE_SIZE = 20;
@@ -84,6 +86,7 @@ export default function BookingsListPage() {
   const pagination = result?.ok ? result.value.pagination : undefined;
 
   const actions = useBookingActions();
+  const canManage = usePermission(Permission.ManageBookings);
 
   /** Updates the given search params and returns to the first page. */
   const updateParams = (changes: Record<string, string | null>) => {
@@ -122,10 +125,12 @@ export default function BookingsListPage() {
               <ArrowUpLeftIcon />
             </Button>
           )}
-          <Button onClick={() => setAdding(true)} disabled={tripsQuery.isPending}>
-            <UserPlusIcon />
-            إضافة حجز
-          </Button>
+          {canManage && (
+            <Button onClick={() => setAdding(true)} disabled={tripsQuery.isPending}>
+              <UserPlusIcon />
+              إضافة حجز
+            </Button>
+          )}
         </div>
       </div>
 
@@ -170,8 +175,8 @@ export default function BookingsListPage() {
           firstIndex={(page - 1) * PAGE_SIZE + 1}
           busyBookingId={actions.busyBookingId}
           emptyMessage={EMPTY_MESSAGES[filter]}
-          onAccept={(booking) => actions.accept(booking.tripId, booking)}
-          onCancel={(booking) => actions.requestCancel(booking.tripId, booking)}
+          onAccept={canManage ? (booking) => actions.accept(booking.tripId, booking) : undefined}
+          onCancel={canManage ? (booking) => actions.requestCancel(booking.tripId, booking) : undefined}
         />
       )}
 

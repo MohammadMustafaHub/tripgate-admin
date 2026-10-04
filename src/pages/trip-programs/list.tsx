@@ -7,7 +7,9 @@ import { ListPagination } from "@/components/list-pagination";
 import { Button } from "@/components/ui/button";
 import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty";
 import { Skeleton } from "@/components/ui/skeleton";
+import { usePermission } from "@/hooks/use-permission";
 import { formatNumber } from "@/lib/format";
+import { Permission } from "@/lib/permissions";
 
 const PAGE_SIZE = 12;
 
@@ -20,13 +22,14 @@ export default function TripProgramsListPage() {
     queryFn: () => listTripPrograms({ page, pageSize: PAGE_SIZE }),
     placeholderData: keepPreviousData,
   });
+  const canManage = usePermission(Permission.ManageTripPrograms);
 
   const goToPage = (next: number) => {
     setSearchParams(next === 1 ? {} : { page: String(next) });
     document.querySelector("[data-slot=sidebar-inset]")?.scrollTo({ top: 0 });
   };
 
-  const addButton = (
+  const addButton = canManage && (
     <Button render={<Link to="/trip-programs/new" />} nativeButton={false}>
       <PlusIcon />
       إضافة برنامج
@@ -79,9 +82,13 @@ export default function TripProgramsListPage() {
               <MapIcon />
             </EmptyMedia>
             <EmptyTitle>لا توجد برامج رحلات بعد</EmptyTitle>
-            <EmptyDescription>أضف أول برنامج رحلة لتتمكن من جدولة الرحلات وعرضها لعملائك.</EmptyDescription>
+            <EmptyDescription>
+              {canManage
+                ? "أضف أول برنامج رحلة لتتمكن من جدولة الرحلات وعرضها لعملائك."
+                : "لم تُضف أي برامج رحلات لمؤسستك حتى الآن."}
+            </EmptyDescription>
           </EmptyHeader>
-          <EmptyContent>{addButton}</EmptyContent>
+          {addButton && <EmptyContent>{addButton}</EmptyContent>}
         </Empty>
       ) : (
         <div className="grid gap-4 xl:grid-cols-2">

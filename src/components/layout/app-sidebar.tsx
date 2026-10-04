@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Link, NavLink, useLocation } from "react-router";
 import { ChevronLeftIcon, ChevronsUpDownIcon, LogOutIcon, PlaneTakeoffIcon, UserIcon } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -25,7 +25,8 @@ import {
   SidebarRail,
   useSidebar,
 } from "@/components/ui/sidebar";
-import { NAV_GROUPS, isNavActive, type NavItem } from "@/layouts/navigation";
+import { isNavActive, navGroupsFor, type NavItem } from "@/layouts/navigation";
+import { formatRoleTitle } from "@/lib/permissions";
 import { formatPhoneNumber } from "@/lib/phone";
 import { useUserStore } from "@/stores/user-store";
 
@@ -45,6 +46,9 @@ const TREE_ITEM_CLASS =
 const TOOLTIP_SIDE = "left";
 
 export function AppSidebar() {
+  const roles = useUserStore((state) => state.user?.roles);
+  const groups = useMemo(() => navGroupsFor(roles ?? []), [roles]);
+
   return (
     <Sidebar side="right" variant="inset" collapsible="icon">
       <SidebarHeader>
@@ -64,7 +68,7 @@ export function AppSidebar() {
       </SidebarHeader>
 
       <SidebarContent className="gap-0">
-        {NAV_GROUPS.map((group) => (
+        {groups.map((group) => (
           <SidebarGroup key={group.label} className="py-1">
             <SidebarGroupLabel className="h-7 text-sidebar-foreground/60">{group.label}</SidebarGroupLabel>
             <SidebarMenu>
@@ -180,7 +184,7 @@ function NavUser() {
               <span dir="ltr" className="truncate text-end font-medium text-sidebar-accent-foreground">
                 {formatPhoneNumber(user.phoneNumber)}
               </span>
-              <span className="truncate text-xs text-sidebar-foreground/70">مدير المؤسسة</span>
+              <span className="truncate text-xs text-sidebar-foreground/70">{formatRoleTitle(user.roles)}</span>
             </div>
             <ChevronsUpDownIcon className="ms-auto size-4 opacity-60" />
           </DropdownMenuTrigger>

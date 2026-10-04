@@ -7,9 +7,11 @@ import { SegmentedTabs } from "@/components/segmented-tabs";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/toast";
 import { useBookingActions } from "@/hooks/use-booking-actions";
+import { usePermission } from "@/hooks/use-permission";
 import { formatNumber } from "@/lib/format";
-import { BookingStatus } from "@/models/booking";
-import type { TripDetails } from "@/models/trip";
+import { Permission } from "@/lib/permissions";
+import { BookingStatus, type Booking } from "@/models/booking";
+import type { Trip } from "@/models/trip";
 import { AddBookingDialog } from "./add-booking-dialog";
 import { BookingsTable } from "./bookings-table";
 import { CancelBookingDialog } from "./cancel-booking-dialog";
@@ -40,8 +42,11 @@ const EMPTY_MESSAGES: Record<StatusFilter, string> = {
   cancelled: "لا توجد حجوزات ملغاة.",
 };
 
-/** Bookings on a trip: seat usage, a filterable table, and admin actions to add, accept and cancel. */
-export function TripBookings({ trip }: { trip: TripDetails }) {
+/**
+ * Bookings on a trip: seat usage, a filterable table, and, for users who can manage bookings,
+ * actions to add, accept and cancel.
+ */
+export function TripBookings({ trip, bookings: allBookings }: { trip: Trip; bookings: Booking[] }) {
   const queryClient = useQueryClient();
   const [filter, setFilter] = useState<StatusFilter>("all");
   const [page, setPage] = useState(1);
@@ -62,8 +67,9 @@ export function TripBookings({ trip }: { trip: TripDetails }) {
   };
 
   const actions = useBookingActions();
+  const canManage = usePermission(Permission.ManageBookings);
 
-  const pendingCount = trip.bookings.filter((b) => b.status === BookingStatus.Pending).length;
+  const pendingCount = allBookings.filter((b) => b.status === BookingStatus.Pending).length;
 
   return (
     <section className="flex flex-col gap-4">
@@ -71,17 +77,19 @@ export function TripBookings({ trip }: { trip: TripDetails }) {
         <div className="flex flex-col gap-0.5">
           <h3 className="text-lg font-semibold">الحجوزات</h3>
           <p className="text-sm text-muted-foreground">
-            عدد الحجوزات: {formatNumber(trip.bookings.length)}
+            عدد الحجوزات: {formatNumber(allBookings.length)}
             {pendingCount > 0 && ` · قيد الانتظار: ${formatNumber(pendingCount)}`}
           </p>
         </div>
-        <div className="flex items-center gap-3">
-          {!trip.isOpenForBooking && <span className="text-sm text-muted-foreground">الرحلة مغلقة للحجز</span>}
-          <Button disabled={!trip.isOpenForBooking || trip.availableSeats === 0} onClick={() => setAdding(true)}>
-            <UserPlusIcon />
-            إضافة حجز
-          </Button>
-        </div>
+        {canManage && (
+          <div className="flex items-center gap-3">
+            {!trip.isOpenForBooking && <span className="text-sm text-muted-foreground">الرحلة مغلقة للحجز</span>}
+            <Button disabled={!trip.isOpenForBooking || trip.availableSeats === 0} onClick={() => setAdding(true)}>
+              <UserPlusIcon />
+              إضافة حجز
+            </Button>
+          </div>
+        )}
       </div>
 
       <div className="max-w-2xl">
@@ -110,8 +118,8 @@ export function TripBookings({ trip }: { trip: TripDetails }) {
           firstIndex={(page - 1) * PAGE_SIZE + 1}
           busyBookingId={actions.busyBookingId}
           emptyMessage={EMPTY_MESSAGES[filter]}
-          onAccept={(booking) => actions.accept(trip.id, booking)}
-          onCancel={(booking) => actions.requestCancel(trip.id, booking)}
+          onAccept={canManage ? (booking) => actions.accept(trip.id, booking) : undefined}
+          onCancel={canManage ? (booking) => actions.requestCancel(trip.id, booking) : undefined}
         />
       )}
 

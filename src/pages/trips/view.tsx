@@ -40,8 +40,10 @@ import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyTitle } from "
 import { Skeleton } from "@/components/ui/skeleton";
 import { Spinner } from "@/components/ui/spinner";
 import { toast } from "@/components/ui/toast";
+import { usePermission } from "@/hooks/use-permission";
 import { dateParts, formatNumber, formatPrice, formatShortDate } from "@/lib/format";
 import { imageUrl } from "@/lib/images";
+import { Permission } from "@/lib/permissions";
 import type { TripDetails } from "@/models/trip";
 
 const DELETE_ERRORS: Record<DeleteTripError, string> = {
@@ -129,6 +131,7 @@ function TripDetailsView({ trip }: { trip: TripDetails }) {
     },
   });
 
+  const canManage = usePermission(Permission.ManageTrips);
   const takeoff = dateParts(trip.takeoffDate);
   const closes = dateParts(trip.finalRegistrationDate);
 
@@ -145,45 +148,49 @@ function TripDetailsView({ trip }: { trip: TripDetails }) {
           عرض البرنامج
           <ArrowUpLeftIcon />
         </Button>
-        <Button
-          variant="outline"
-          disabled={toggleActive.isPending}
-          onClick={() => toggleActive.mutate({ id: trip.id })}
-        >
-          {toggleActive.isPending ? <Spinner /> : trip.isActive ? <PauseIcon /> : <PlayIcon />}
-          {trip.isActive ? "إيقاف الرحلة" : "تفعيل الرحلة"}
-        </Button>
-        <Button variant="outline" render={<Link to={`/trips/${trip.id}/edit`} />} nativeButton={false}>
-          <PencilIcon />
-          تعديل
-        </Button>
-        <AlertDialog>
-          <AlertDialogTrigger
-            render={<Button variant="ghost" size="icon" aria-label="حذف الرحلة" className="text-destructive hover:text-destructive" />}
-          >
-            <Trash2Icon />
-          </AlertDialogTrigger>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>حذف الرحلة؟</AlertDialogTitle>
-              <AlertDialogDescription>
-                ستُحذف رحلة {formatShortDate(trip.takeoffDate)} نهائياً. لا يمكن حذف رحلة عليها حجوزات؛ يمكنك
-                إيقافها بدلاً من ذلك.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>إلغاء</AlertDialogCancel>
-              <Button
-                variant="destructive"
-                disabled={remove.isPending}
-                onClick={() => remove.mutate({ id: trip.id })}
+        {canManage && (
+          <>
+            <Button
+              variant="outline"
+              disabled={toggleActive.isPending}
+              onClick={() => toggleActive.mutate({ id: trip.id })}
+            >
+              {toggleActive.isPending ? <Spinner /> : trip.isActive ? <PauseIcon /> : <PlayIcon />}
+              {trip.isActive ? "إيقاف الرحلة" : "تفعيل الرحلة"}
+            </Button>
+            <Button variant="outline" render={<Link to={`/trips/${trip.id}/edit`} />} nativeButton={false}>
+              <PencilIcon />
+              تعديل
+            </Button>
+            <AlertDialog>
+              <AlertDialogTrigger
+                render={<Button variant="ghost" size="icon" aria-label="حذف الرحلة" className="text-destructive hover:text-destructive" />}
               >
-                {remove.isPending && <Spinner />}
-                حذف
-              </Button>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
+                <Trash2Icon />
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>حذف الرحلة؟</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    ستُحذف رحلة {formatShortDate(trip.takeoffDate)} نهائياً. لا يمكن حذف رحلة عليها حجوزات؛ يمكنك
+                    إيقافها بدلاً من ذلك.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>إلغاء</AlertDialogCancel>
+                  <Button
+                    variant="destructive"
+                    disabled={remove.isPending}
+                    onClick={() => remove.mutate({ id: trip.id })}
+                  >
+                    {remove.isPending && <Spinner />}
+                    حذف
+                  </Button>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </>
+        )}
       </div>
 
       <div className="grid gap-4 lg:grid-cols-2">
@@ -222,7 +229,7 @@ function TripDetailsView({ trip }: { trip: TripDetails }) {
         </StatTiles>
       </div>
 
-      <TripBookings trip={trip} />
+      {trip.bookings && <TripBookings trip={trip} bookings={trip.bookings} />}
     </div>
   );
 }

@@ -18,5 +18,6 @@ export interface Trip {
 
 /** A trip with its customers' bookings, oldest first; cancelled ones are kept for history. */
 export interface TripDetails extends Trip {
-  bookings: Booking[];
+  /** Null when the user's roles do not allow viewing bookings. */
+  bookings: Booking[] | null;
 }

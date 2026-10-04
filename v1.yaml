@@ -9,6 +9,11 @@ paths:
     get:
       tags:
         - Bookings
+      description: >-
+        **Authorization** (all must pass):
+
+        - `ViewBookings`: one of `tenantAdmin`, `admin`, `bookingsViewer`,
+        `bookingsManager`
       parameters:
         - name: Status
           in: query
@@ -47,10 +52,21 @@ paths:
             text/json:
               schema:
                 $ref: "#/components/schemas/PaginatedOfBookingListItemResponse"
+        "401":
+          description: Missing, invalid or expired access token.
+        "403":
+          description: The caller lacks the required tenant or role.
   /api/trips/trips/{tripId}/bookings:
     get:
       tags:
         - TripBookings
+      description: >-
+        **Authorization** (all must pass):
+
+        - `TenantMember`
+
+        - `ViewBookings`: one of `tenantAdmin`, `admin`, `bookingsViewer`,
+        `bookingsManager`
       parameters:
         - name: tripId
           in: path
@@ -95,6 +111,10 @@ paths:
             text/json:
               schema:
                 $ref: "#/components/schemas/PaginatedOfBookingListItemResponse"
+        "401":
+          description: Missing, invalid or expired access token.
+        "403":
+          description: The caller lacks the required tenant or role.
         "404":
           description: Not Found
           content:
@@ -110,6 +130,10 @@ paths:
     post:
       tags:
         - TripBookings
+      description: |-
+        **Authorization** (all must pass):
+        - `TenantMember`
+        - `ManageBookings`: one of `tenantAdmin`, `admin`, `bookingsManager`
       parameters:
         - name: tripId
           in: path
@@ -154,6 +178,10 @@ paths:
             text/json:
               schema:
                 $ref: "#/components/schemas/ProblemDetails"
+        "401":
+          description: Missing, invalid or expired access token.
+        "403":
+          description: The caller lacks the required tenant or role.
         "404":
           description: Not Found
           content:
@@ -183,6 +211,13 @@ paths:
     get:
       tags:
         - TripBookings
+      description: >-
+        **Authorization** (all must pass):
+
+        - `TenantMember`
+
+        - `ViewBookings`: one of `tenantAdmin`, `admin`, `bookingsViewer`,
+        `bookingsManager`
       parameters:
         - name: tripId
           in: path
@@ -209,6 +244,10 @@ paths:
             text/json:
               schema:
                 $ref: "#/components/schemas/SuccessOfBookingResponse"
+        "401":
+          description: Missing, invalid or expired access token.
+        "403":
+          description: The caller lacks the required tenant or role.
         "404":
           description: Not Found
           content:
@@ -225,6 +264,10 @@ paths:
     put:
       tags:
         - TripBookings
+      description: |-
+        **Authorization** (all must pass):
+        - `TenantMember`
+        - `ManageBookings`: one of `tenantAdmin`, `admin`, `bookingsManager`
       parameters:
         - name: tripId
           in: path
@@ -263,6 +306,10 @@ paths:
             text/json:
               schema:
                 $ref: "#/components/schemas/SuccessOfBookingResponse"
+        "401":
+          description: Missing, invalid or expired access token.
+        "403":
+          description: The caller lacks the required tenant or role.
         "404":
           description: Not Found
           content:
@@ -292,6 +339,9 @@ paths:
     get:
       tags:
         - TripPrograms
+      description: |-
+        **Authorization** (all must pass):
+        - `TenantMember`
       parameters:
         - name: Page
           in: query
@@ -324,9 +374,20 @@ paths:
             text/json:
               schema:
                 $ref: "#/components/schemas/PaginatedOfTripProgramResponse"
+        "401":
+          description: Missing, invalid or expired access token.
+        "403":
+          description: The caller lacks the required tenant or role.
     post:
       tags:
         - TripPrograms
+      description: >-
+        **Authorization** (all must pass):
+
+        - `TenantMember`
+
+        - `ManageTripPrograms`: one of `tenantAdmin`, `admin`,
+        `tripProgramsManager`
       requestBody:
         content:
           application/json:
@@ -352,10 +413,17 @@ paths:
             text/json:
               schema:
                 $ref: "#/components/schemas/SuccessOfTripProgramResponse"
+        "401":
+          description: Missing, invalid or expired access token.
+        "403":
+          description: The caller lacks the required tenant or role.
   /api/trips/TripPrograms/{id}:
     get:
       tags:
         - TripPrograms
+      description: |-
+        **Authorization** (all must pass):
+        - `TenantMember`
       parameters:
         - name: id
           in: path
@@ -376,6 +444,10 @@ paths:
             text/json:
               schema:
                 $ref: "#/components/schemas/SuccessOfTripProgramResponse"
+        "401":
+          description: Missing, invalid or expired access token.
+        "403":
+          description: The caller lacks the required tenant or role.
         "404":
           description: Not Found
           content:
@@ -391,6 +463,13 @@ paths:
     put:
       tags:
         - TripPrograms
+      description: >-
+        **Authorization** (all must pass):
+
+        - `TenantMember`
+
+        - `ManageTripPrograms`: one of `tenantAdmin`, `admin`,
+        `tripProgramsManager`
       parameters:
         - name: id
           in: path
@@ -423,6 +502,10 @@ paths:
             text/json:
               schema:
                 $ref: "#/components/schemas/SuccessOfTripProgramResponse"
+        "401":
+          description: Missing, invalid or expired access token.
+        "403":
+          description: The caller lacks the required tenant or role.
         "404":
           description: Not Found
           content:
@@ -438,6 +521,13 @@ paths:
     delete:
       tags:
         - TripPrograms
+      description: >-
+        **Authorization** (all must pass):
+
+        - `TenantMember`
+
+        - `ManageTripPrograms`: one of `tenantAdmin`, `admin`,
+        `tripProgramsManager`
       parameters:
         - name: id
           in: path
@@ -448,6 +538,10 @@ paths:
       responses:
         "204":
           description: No Content
+        "401":
+          description: Missing, invalid or expired access token.
+        "403":
+          description: The caller lacks the required tenant or role.
         "404":
           description: Not Found
           content:
@@ -476,6 +570,9 @@ paths:
     get:
       tags:
         - Trips
+      description: |-
+        **Authorization** (all must pass):
+        - `TenantMember`
       parameters:
         - name: TripProgramId
           in: query
@@ -519,9 +616,17 @@ paths:
             text/json:
               schema:
                 $ref: "#/components/schemas/PaginatedOfTripResponse"
+        "401":
+          description: Missing, invalid or expired access token.
+        "403":
+          description: The caller lacks the required tenant or role.
     post:
       tags:
         - Trips
+      description: |-
+        **Authorization** (all must pass):
+        - `TenantMember`
+        - `ManageTrips`: one of `tenantAdmin`, `admin`, `tripsManager`
       requestBody:
         content:
           application/json:
@@ -547,6 +652,10 @@ paths:
             text/json:
               schema:
                 $ref: "#/components/schemas/SuccessOfTripResponse"
+        "401":
+          description: Missing, invalid or expired access token.
+        "403":
+          description: The caller lacks the required tenant or role.
         "404":
           description: Not Found
           content:
@@ -563,6 +672,9 @@ paths:
     get:
       tags:
         - Trips
+      description: |-
+        **Authorization** (all must pass):
+        - `TenantMember`
       parameters:
         - name: id
           in: path
@@ -583,6 +695,10 @@ paths:
             text/json:
               schema:
                 $ref: "#/components/schemas/SuccessOfTripDetailsResponse"
+        "401":
+          description: Missing, invalid or expired access token.
+        "403":
+          description: The caller lacks the required tenant or role.
         "404":
           description: Not Found
           content:
@@ -598,6 +714,10 @@ paths:
     put:
       tags:
         - Trips
+      description: |-
+        **Authorization** (all must pass):
+        - `TenantMember`
+        - `ManageTrips`: one of `tenantAdmin`, `admin`, `tripsManager`
       parameters:
         - name: id
           in: path
@@ -630,6 +750,10 @@ paths:
             text/json:
               schema:
                 $ref: "#/components/schemas/SuccessOfTripResponse"
+        "401":
+          description: Missing, invalid or expired access token.
+        "403":
+          description: The caller lacks the required tenant or role.
         "404":
           description: Not Found
           content:
@@ -658,6 +782,10 @@ paths:
     delete:
       tags:
         - Trips
+      description: |-
+        **Authorization** (all must pass):
+        - `TenantMember`
+        - `ManageTrips`: one of `tenantAdmin`, `admin`, `tripsManager`
       parameters:
         - name: id
           in: path
@@ -668,6 +796,10 @@ paths:
       responses:
         "204":
           description: No Content
+        "401":
+          description: Missing, invalid or expired access token.
+        "403":
+          description: The caller lacks the required tenant or role.
         "404":
           description: Not Found
           content:
@@ -697,6 +829,10 @@ paths:
     post:
       tags:
         - Trips
+      description: |-
+        **Authorization** (all must pass):
+        - `TenantMember`
+        - `ManageTrips`: one of `tenantAdmin`, `admin`, `tripsManager`
       parameters:
         - name: id
           in: path
@@ -717,6 +853,10 @@ paths:
             text/json:
               schema:
                 $ref: "#/components/schemas/SuccessOfTripResponse"
+        "401":
+          description: Missing, invalid or expired access token.
+        "403":
+          description: The caller lacks the required tenant or role.
         "404":
           description: Not Found
           content:
@@ -745,6 +885,10 @@ paths:
     post:
       tags:
         - Trips
+      description: |-
+        **Authorization** (all must pass):
+        - `TenantMember`
+        - `ManageTrips`: one of `tenantAdmin`, `admin`, `tripsManager`
       parameters:
         - name: id
           in: path
@@ -765,6 +909,10 @@ paths:
             text/json:
               schema:
                 $ref: "#/components/schemas/SuccessOfTripResponse"
+        "401":
+          description: Missing, invalid or expired access token.
+        "403":
+          description: The caller lacks the required tenant or role.
         "404":
           description: Not Found
           content:
@@ -793,6 +941,10 @@ paths:
     post:
       tags:
         - Tenants
+      description: |-
+        **Authorization** (all must pass):
+        - `LoggedIn`
+        - `PhoneConfirmed`
       requestBody:
         content:
           application/json:
@@ -818,6 +970,10 @@ paths:
             text/json:
               schema:
                 $ref: "#/components/schemas/SuccessOfTokensResponse"
+        "401":
+          description: Missing, invalid or expired access token.
+        "403":
+          description: The caller lacks the required tenant or role.
         "409":
           description: User already belongs to a tenant, or the subdomain is taken.
           content:
@@ -834,6 +990,10 @@ paths:
     get:
       tags:
         - Tenants
+      description: |-
+        **Authorization** (all must pass):
+        - `LoggedIn`
+        - `TenantMember`
       responses:
         "200":
           description: OK
@@ -847,6 +1007,10 @@ paths:
             text/json:
               schema:
                 $ref: "#/components/schemas/SuccessOfTenantResponse"
+        "401":
+          description: Missing, invalid or expired access token.
+        "403":
+          description: The caller lacks the required tenant or role.
         "404":
           description: The token carries no tenant, so the user has not created one yet.
           content:
@@ -863,6 +1027,9 @@ paths:
     post:
       tags:
         - Media
+      description: |-
+        **Authorization** (all must pass):
+        - `TenantMember`
       requestBody:
         content:
           multipart/form-data:
@@ -885,10 +1052,17 @@ paths:
             text/json:
               schema:
                 $ref: "#/components/schemas/SuccessOfImageResponse"
+        "401":
+          description: Missing, invalid or expired access token.
+        "403":
+          description: The caller lacks the required tenant or role.
   /api/Media/images/batch:
     post:
       tags:
         - Media
+      description: |-
+        **Authorization** (all must pass):
+        - `TenantMember`
       requestBody:
         content:
           multipart/form-data:
@@ -913,10 +1087,176 @@ paths:
             text/json:
               schema:
                 $ref: "#/components/schemas/SuccessOfListOfImageResponse"
+        "401":
+          description: Missing, invalid or expired access token.
+        "403":
+          description: The caller lacks the required tenant or role.
+  /api/Employees:
+    get:
+      tags:
+        - Employees
+      description: |-
+        **Authorization** (all must pass):
+        - `ManageEmployees`: one of `tenantAdmin`
+      parameters:
+        - name: Page
+          in: query
+          description: One-based page number.
+          schema:
+            pattern: ^-?(?:0|[1-9]\d*)$
+            type:
+              - integer
+              - string
+            format: int32
+        - name: PageSize
+          in: query
+          description: Number of employees per page, at most 100.
+          schema:
+            pattern: ^-?(?:0|[1-9]\d*)$
+            type:
+              - integer
+              - string
+            format: int32
+      responses:
+        "200":
+          description: OK
+          content:
+            text/plain:
+              schema:
+                $ref: "#/components/schemas/PaginatedOfEmployeeResponse"
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaginatedOfEmployeeResponse"
+            text/json:
+              schema:
+                $ref: "#/components/schemas/PaginatedOfEmployeeResponse"
+        "401":
+          description: Missing, invalid or expired access token.
+        "403":
+          description: The caller lacks the required tenant or role.
+    post:
+      tags:
+        - Employees
+      description: |-
+        **Authorization** (all must pass):
+        - `ManageEmployees`: one of `tenantAdmin`
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateEmployeeRequest"
+          text/json:
+            schema:
+              $ref: "#/components/schemas/CreateEmployeeRequest"
+          application/*+json:
+            schema:
+              $ref: "#/components/schemas/CreateEmployeeRequest"
+        required: true
+      responses:
+        "201":
+          description: Created
+          content:
+            text/plain:
+              schema:
+                $ref: "#/components/schemas/SuccessOfEmployeeResponse"
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessOfEmployeeResponse"
+            text/json:
+              schema:
+                $ref: "#/components/schemas/SuccessOfEmployeeResponse"
+        "400":
+          description: Bad Request
+          content:
+            text/plain:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+        "401":
+          description: Missing, invalid or expired access token.
+        "403":
+          description: The caller lacks the required tenant or role.
+        "409":
+          description: Phone number already registered.
+          content:
+            text/plain:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+  /api/Employees/{id}:
+    delete:
+      tags:
+        - Employees
+      description: |-
+        **Authorization** (all must pass):
+        - `ManageEmployees`: one of `tenantAdmin`
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          content:
+            text/plain:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+        "401":
+          description: Missing, invalid or expired access token.
+        "403":
+          description: The caller lacks the required tenant or role.
+        "404":
+          description: Not Found
+          content:
+            text/plain:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+        "409":
+          description: The user is the tenant admin, who cannot be removed.
+          content:
+            text/plain:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
   /api/auth/Password/change:
     post:
       tags:
         - Password
+      description: |-
+        **Authorization** (all must pass):
+        - `LoggedIn`
       requestBody:
         content:
           application/json:
@@ -945,6 +1285,8 @@ paths:
             text/json:
               schema:
                 $ref: "#/components/schemas/ProblemDetails"
+        "401":
+          description: Missing, invalid or expired access token.
   /api/auth/Password/forgot:
     post:
       tags:
@@ -977,6 +1319,7 @@ paths:
             text/json:
               schema:
                 $ref: "#/components/schemas/ProblemDetails"
+      security: []
   /api/auth/Password/verify-code:
     post:
       tags:
@@ -1018,6 +1361,7 @@ paths:
             text/json:
               schema:
                 $ref: "#/components/schemas/ProblemDetails"
+      security: []
   /api/auth/Password/reset:
     post:
       tags:
@@ -1050,6 +1394,7 @@ paths:
             text/json:
               schema:
                 $ref: "#/components/schemas/ProblemDetails"
+      security: []
   /api/auth/register:
     post:
       tags:
@@ -1091,6 +1436,7 @@ paths:
             text/json:
               schema:
                 $ref: "#/components/schemas/ProblemDetails"
+      security: []
   /api/auth/login:
     post:
       tags:
@@ -1144,6 +1490,7 @@ paths:
             text/json:
               schema:
                 $ref: "#/components/schemas/ProblemDetails"
+      security: []
   /api/auth/Tokens/refresh:
     post:
       tags:
@@ -1185,6 +1532,7 @@ paths:
             text/json:
               schema:
                 $ref: "#/components/schemas/ProblemDetails"
+      security: []
   /api/auth/Tokens/revoke:
     post:
       tags:
@@ -1216,17 +1564,26 @@ paths:
             text/json:
               schema:
                 $ref: "#/components/schemas/ProblemDetails"
+      security: []
   /api/auth/Tokens/revoke-all:
     post:
       tags:
         - Tokens
+      description: |-
+        **Authorization** (all must pass):
+        - `LoggedIn`
       responses:
         "204":
           description: No Content
+        "401":
+          description: Missing, invalid or expired access token.
   /api/auth/Users/me:
     get:
       tags:
         - Users
+      description: |-
+        **Authorization** (all must pass):
+        - `LoggedIn`
       responses:
         "200":
           description: OK
@@ -1240,13 +1597,20 @@ paths:
             text/json:
               schema:
                 $ref: "#/components/schemas/SuccessOfUserResponse"
+        "401":
+          description: Missing, invalid or expired access token.
   /api/auth/Verification/send-code:
     post:
       tags:
         - Verification
+      description: |-
+        **Authorization** (all must pass):
+        - `LoggedIn`
       responses:
         "204":
           description: No Content
+        "401":
+          description: Missing, invalid or expired access token.
         "409":
           description: Phone number is already confirmed.
           content:
@@ -1276,6 +1640,9 @@ paths:
     post:
       tags:
         - Verification
+      description: |-
+        **Authorization** (all must pass):
+        - `LoggedIn`
       requestBody:
         content:
           application/json:
@@ -1313,10 +1680,15 @@ paths:
             text/json:
               schema:
                 $ref: "#/components/schemas/ProblemDetails"
+        "401":
+          description: Missing, invalid or expired access token.
   /api/Analytics/trips:
     get:
       tags:
         - Analytics
+      description: |-
+        **Authorization** (all must pass):
+        - `ViewStatistics`: one of `tenantAdmin`, `admin`, `statisticsViewer`
       responses:
         "200":
           description: OK
@@ -1330,10 +1702,17 @@ paths:
             text/json:
               schema:
                 $ref: "#/components/schemas/SuccessOfTripCountsResponse"
+        "401":
+          description: Missing, invalid or expired access token.
+        "403":
+          description: The caller lacks the required tenant or role.
   /api/Analytics/earnings:
     get:
       tags:
         - Analytics
+      description: |-
+        **Authorization** (all must pass):
+        - `ViewStatistics`: one of `tenantAdmin`, `admin`, `statisticsViewer`
       parameters:
         - name: From
           in: query
@@ -1360,10 +1739,17 @@ paths:
             text/json:
               schema:
                 $ref: "#/components/schemas/SuccessOfEarningsResponse"
+        "401":
+          description: Missing, invalid or expired access token.
+        "403":
+          description: The caller lacks the required tenant or role.
   /api/Analytics/earnings/timeline:
     get:
       tags:
         - Analytics
+      description: |-
+        **Authorization** (all must pass):
+        - `ViewStatistics`: one of `tenantAdmin`, `admin`, `statisticsViewer`
       parameters:
         - name: From
           in: query
@@ -1400,10 +1786,17 @@ paths:
             text/json:
               schema:
                 $ref: "#/components/schemas/SuccessOfListOfEarningsPeriodResponse"
+        "401":
+          description: Missing, invalid or expired access token.
+        "403":
+          description: The caller lacks the required tenant or role.
   /api/Analytics/earnings/top-programs:
     get:
       tags:
         - Analytics
+      description: |-
+        **Authorization** (all must pass):
+        - `ViewStatistics`: one of `tenantAdmin`, `admin`, `statisticsViewer`
       parameters:
         - name: From
           in: query
@@ -1439,6 +1832,10 @@ paths:
             text/json:
               schema:
                 $ref: "#/components/schemas/SuccessOfListOfProgramEarningsResponse"
+        "401":
+          description: Missing, invalid or expired access token.
+        "403":
+          description: The caller lacks the required tenant or role.
 components:
   schemas:
     BookingListItemResponse:
@@ -1606,6 +2003,29 @@ components:
           description: Passport data for each seat. Required, one per seat, for
             international trips; ignored otherwise.
       description: A customer's booking on a trip.
+    CreateEmployeeRequest:
+      required:
+        - phoneNumber
+        - password
+        - roles
+      type: object
+      properties:
+        phoneNumber:
+          pattern: ^9647\d{9}$
+          type: string
+          description: Iraqi phone number in the format 9647XXXXXXXXX. Also the employee's
+            login.
+        password:
+          minLength: 8
+          type: string
+          description: Initial password. Must be at least 8 characters.
+        roles:
+          type: array
+          items:
+            type: string
+          description: "Roles to grant: admin, tripProgramsManager, tripsManager,
+            bookingsViewer, bookingsManager, statisticsViewer."
+      description: Account details and roles for a new employee of the caller's tenant.
     CreateTenantRequest:
       required:
         - name
@@ -1736,6 +2156,30 @@ components:
           description: Earned plus upcoming confirmed and pending bookings.
           format: double
       description: Earnings from trips taking off within a time frame.
+    EmployeeResponse:
+      required:
+        - id
+        - phoneNumber
+        - phoneNumberConfirmed
+        - roles
+      type: object
+      properties:
+        id:
+          type: string
+          description: Identifier of the user.
+          format: uuid
+        phoneNumber:
+          type: string
+          description: Iraqi phone number the account is registered under.
+        phoneNumberConfirmed:
+          type: boolean
+          description: Whether the phone number is confirmed.
+        roles:
+          type: array
+          items:
+            type: string
+          description: Role names held by the user.
+      description: A user of the tenant and the roles they hold.
     ForgotPasswordRequest:
       required:
         - phoneNumber
@@ -1786,6 +2230,20 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/BookingListItemResponse"
+        pagination:
+          $ref: "#/components/schemas/PaginationData"
+        isSuccessful:
+          type: boolean
+    PaginatedOfEmployeeResponse:
+      required:
+        - data
+        - pagination
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/EmployeeResponse"
         pagination:
           $ref: "#/components/schemas/PaginationData"
         isSuccessful:
@@ -2016,6 +2474,17 @@ components:
           oneOf:
             - type: "null"
             - $ref: "#/components/schemas/EarningsResponse"
+        isSuccessful:
+          type: boolean
+    SuccessOfEmployeeResponse:
+      required:
+        - data
+      type: object
+      properties:
+        data:
+          oneOf:
+            - type: "null"
+            - $ref: "#/components/schemas/EmployeeResponse"
         isSuccessful:
           type: boolean
     SuccessOfImageResponse:
@@ -2256,11 +2725,13 @@ components:
       type: object
       properties:
         bookings:
-          type: array
+          type:
+            - "null"
+            - array
           items:
             $ref: "#/components/schemas/BookingResponse"
           description: Bookings on the trip, oldest first. Cancelled bookings are kept for
-            history.
+            history. Null when the caller cannot view bookings.
         id:
           type: string
           description: Identifier of the trip.
@@ -2661,6 +3132,7 @@ tags:
   - name: Trips
   - name: Tenants
   - name: Media
+  - name: Employees
   - name: Password
   - name: Registration
   - name: Tokens
