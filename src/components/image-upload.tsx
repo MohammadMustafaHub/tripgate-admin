@@ -24,6 +24,7 @@ export function ImageUpload({
   maxSize,
   disabled = false,
   invalid = false,
+  fit = "cover",
   className,
 }: {
   id?: string;
@@ -35,6 +36,8 @@ export function ImageUpload({
   maxSize: number;
   disabled?: boolean;
   invalid?: boolean;
+  /** "contain" shows the whole image, e.g. for logos. */
+  fit?: "cover" | "contain";
   className?: string;
 }) {
   const [preview, setPreview] = useState<string | null>(null);
@@ -81,9 +84,13 @@ export function ImageUpload({
         {src ? (
           <>
             {preview ? (
-              <img src={preview} alt="" className="size-full object-cover" />
+              <img src={preview} alt="" className={cn("size-full", fit === "contain" ? "object-contain p-4" : "object-cover")} />
             ) : (
-              <RemoteImage src={src} alt="الصورة المختارة" className="size-full" />
+              <RemoteImage
+                src={src}
+                alt="الصورة المختارة"
+                className={cn("size-full", fit === "contain" && "bg-transparent object-contain p-4")}
+              />
             )}
             {uploading ? (
               <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-black/45 text-sm font-medium text-white">

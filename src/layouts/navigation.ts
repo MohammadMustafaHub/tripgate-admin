@@ -57,7 +57,7 @@ export const NAV_GROUPS: NavGroup[] = [
         title: "الإعدادات",
         icon: SettingsIcon,
         children: [
-          { title: "المؤسسة", to: "/settings/tenant" },
+          { title: "المؤسسة", to: "/settings/tenant", subPages: { edit: "تعديل" } },
           { title: "الحساب", to: "/settings/account" },
           {
             title: "الموظفون",

@@ -22,6 +22,7 @@ export const Permission = {
   ManageBookings: "ManageBookings",
   ViewStatistics: "ViewStatistics",
   ManageEmployees: "ManageEmployees",
+  ManageTenant: "ManageTenant",
 } as const;
 
 export type Permission = (typeof Permission)[keyof typeof Permission];
@@ -34,6 +35,7 @@ const PERMISSION_ROLES: Record<Permission, Role[]> = {
   ManageBookings: [Role.TenantAdmin, Role.Admin, Role.BookingsManager],
   ViewStatistics: [Role.TenantAdmin, Role.Admin, Role.StatisticsViewer],
   ManageEmployees: [Role.TenantAdmin],
+  ManageTenant: [Role.TenantAdmin],
 };
 
 export function hasPermission(roles: readonly string[], permission: Permission): boolean {

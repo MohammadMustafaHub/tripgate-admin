@@ -14,6 +14,8 @@ import DashboardView from "@/pages/dashboard/view";
 import EmployeeCreatePage from "@/pages/employees/create";
 import EmployeesListPage from "@/pages/employees/list";
 import PlaceholderPage from "@/pages/placeholder";
+import TenantEditPage from "@/pages/tenant/edit";
+import TenantViewPage from "@/pages/tenant/view";
 import TripProgramCreatePage from "@/pages/trip-programs/create";
 import TripProgramEditPage from "@/pages/trip-programs/edit";
 import TripProgramsListPage from "@/pages/trip-programs/list";
@@ -77,7 +79,12 @@ export default function App() {
                 <Route index element={<EmployeesListPage />} />
                 <Route path="new" element={<EmployeeCreatePage />} />
               </Route>
-              <Route path="settings/tenant" element={<PlaceholderPage />} />
+              <Route path="settings/tenant">
+                <Route index element={<TenantViewPage />} />
+                <Route element={<PermissionGuard permission={Permission.ManageTenant} />}>
+                  <Route path="edit" element={<TenantEditPage />} />
+                </Route>
+              </Route>
               <Route path="settings/account" element={<PlaceholderPage />} />
             </Route>
           </Route>
