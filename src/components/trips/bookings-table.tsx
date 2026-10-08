@@ -6,6 +6,7 @@ import { Spinner } from "@/components/ui/spinner";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { formatDateTime, formatNumber, formatShortDate } from "@/lib/format";
 import { formatPhoneNumber } from "@/lib/phone";
+import { hasDeparted } from "@/lib/trip";
 import { cn } from "@/lib/utils";
 import { BookingStatus, type Booking } from "@/models/booking";
 import { BookingStatusLabel } from "./booking-status";
@@ -38,7 +39,10 @@ export function BookingsTable<T extends Booking & { tripName?: string; takeoffDa
   /** Booking whose status is being changed; its actions show a spinner. */
   busyBookingId?: string | null;
   emptyMessage: string;
-  /** Omit both actions to show a read-only table without the actions column. */
+  /**
+   * Omit both actions to show a read-only table without the actions column. Accept is
+   * withheld from bookings whose trip has already departed.
+   */
   onAccept?: (booking: T) => void;
   onCancel?: (booking: T) => void;
 }) {
@@ -85,6 +89,8 @@ export function BookingsTable<T extends Booking & { tripName?: string; takeoffDa
             bookings.map((booking, index) => {
               const cancelled = booking.status === BookingStatus.Cancelled;
               const busy = busyBookingId === booking.id;
+              // A pending booking on a trip that has already left can only be cancelled.
+              const departed = !!booking.takeoffDate && hasDeparted({ takeoffDate: booking.takeoffDate });
               return (
                 <TableRow key={booking.id} className={cn(cancelled && "text-muted-foreground")}>
                   <TableCell className="text-center text-muted-foreground tabular-nums">
@@ -130,7 +136,10 @@ export function BookingsTable<T extends Booking & { tripName?: string; takeoffDa
                           <span className="text-muted-foreground">—</span>
                         ) : (
                           <>
-                            {onAccept && booking.status === BookingStatus.Pending && (
+                            {onAccept && booking.status === BookingStatus.Pending && departed && (
+                              <span className="self-center text-xs text-muted-foreground">انطلقت الرحلة</span>
+                            )}
+                            {onAccept && booking.status === BookingStatus.Pending && !departed && (
                               <Button
                                 size="sm"
                                 className="rounded-none"
