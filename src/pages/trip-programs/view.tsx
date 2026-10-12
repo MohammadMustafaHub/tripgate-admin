@@ -1,19 +1,49 @@
-import { Link, useParams } from "react-router";
-import { useQuery } from "@tanstack/react-query";
-import { BusIcon, CalendarPlusIcon, CalendarRangeIcon, CalendarDaysIcon, GlobeIcon, MapPinIcon, PencilIcon, UsersIcon, WalletIcon } from "lucide-react";
-import { getTripProgram } from "@/api/trip-programs";
+import { Link, useNavigate, useParams } from "react-router";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  BusIcon,
+  CalendarPlusIcon,
+  CalendarRangeIcon,
+  CalendarDaysIcon,
+  GlobeIcon,
+  MapPinIcon,
+  PencilIcon,
+  Trash2Icon,
+  UsersIcon,
+  WalletIcon,
+} from "lucide-react";
+import { deleteTripProgram, getTripProgram, type DeleteTripProgramError } from "@/api/trip-programs";
+import { UNKNOWN_ERROR_MESSAGE } from "@/components/form/form-error";
 import { RemoteImage } from "@/components/remote-image";
 import { StatTile, StatTiles } from "@/components/stat-tile";
 import { ItineraryStepper } from "@/components/trip-programs/itinerary-stepper";
+import {
+  AlertDialog,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyTitle } from "@/components/ui/empty";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Spinner } from "@/components/ui/spinner";
+import { toast } from "@/components/ui/toast";
 import { usePermission } from "@/hooks/use-permission";
 import { imageUrl } from "@/lib/images";
 import { DAY_FORMS, formatNumber, formatPrice, formatTransport, pluralize } from "@/lib/format";
 import { Permission } from "@/lib/permissions";
 import type { TripProgram } from "@/models/trip-program";
+
+const DELETE_ERRORS: Record<DeleteTripProgramError, string> = {
+  NOT_FOUND: "لم يعد هذا البرنامج موجوداً.",
+  HAS_SCHEDULED_TRIPS: "تعذّر الحذف: للبرنامج رحلات مجدولة. احذف رحلاته أولاً.",
+  UNKNOWN_ERROR: UNKNOWN_ERROR_MESSAGE,
+};
 
 export default function TripProgramViewPage() {
   const { id = "" } = useParams();
@@ -55,6 +85,21 @@ function ProgramDetails({ program }: { program: TripProgram }) {
   const steps = [...program.steps].sort((a, b) => a.position - b.position);
   const canManage = usePermission(Permission.ManageTripPrograms);
   const canSchedule = usePermission(Permission.ManageTrips);
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
+
+  const remove = useMutation({
+    mutationFn: deleteTripProgram,
+    onSuccess: (result) => {
+      if (!result.ok) {
+        toast.add({ type: "error", title: DELETE_ERRORS[result.error] });
+        return;
+      }
+      void queryClient.invalidateQueries({ queryKey: ["trip-programs"] });
+      toast.add({ type: "success", title: "تم حذف البرنامج." });
+      navigate("/trip-programs", { replace: true });
+    },
+  });
 
   return (
     <div className="flex flex-col gap-6">
@@ -75,6 +120,34 @@ function ProgramDetails({ program }: { program: TripProgram }) {
             <CalendarPlusIcon />
             جدولة رحلة
           </Button>
+        )}
+        {canManage && (
+          <AlertDialog>
+            <AlertDialogTrigger
+              render={<Button variant="ghost" size="icon" aria-label="حذف البرنامج" className="text-destructive hover:text-destructive" />}
+            >
+              <Trash2Icon />
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>حذف البرنامج؟</AlertDialogTitle>
+                <AlertDialogDescription>
+                  سيُحذف برنامج {program.name} نهائياً. لا يمكن حذف برنامج جُدولت منه رحلات؛ احذف رحلاته أولاً.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>إلغاء</AlertDialogCancel>
+                <Button
+                  variant="destructive"
+                  disabled={remove.isPending}
+                  onClick={() => remove.mutate({ id: program.id })}
+                >
+                  {remove.isPending && <Spinner />}
+                  حذف
+                </Button>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         )}
       </div>
 

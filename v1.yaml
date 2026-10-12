@@ -655,7 +655,17 @@ paths:
         "401":
           description: Missing, invalid or expired access token.
         "403":
-          description: The caller lacks the required tenant or role.
+          description: The plan's monthly trip or active trip limit is reached.
+          content:
+            text/plain:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
         "404":
           description: Not Found
           content:
@@ -753,7 +763,18 @@ paths:
         "401":
           description: Missing, invalid or expired access token.
         "403":
-          description: The caller lacks the required tenant or role.
+          description: Moving registration back into the future would go over the plan's
+            active trip limit.
+          content:
+            text/plain:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
         "404":
           description: Not Found
           content:
@@ -856,7 +877,17 @@ paths:
         "401":
           description: Missing, invalid or expired access token.
         "403":
-          description: The caller lacks the required tenant or role.
+          description: The plan's active trip limit is reached.
+          content:
+            text/plain:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
         "404":
           description: Not Found
           content:
@@ -1083,6 +1114,31 @@ paths:
             text/json:
               schema:
                 $ref: "#/components/schemas/ProblemDetails"
+  /api/tenancy/Tenants/current/usage:
+    get:
+      tags:
+        - Tenants
+      description: |-
+        **Authorization** (all must pass):
+        - `LoggedIn`
+        - `TenantMember`
+      responses:
+        "200":
+          description: OK
+          content:
+            text/plain:
+              schema:
+                $ref: "#/components/schemas/SuccessOfTenantUsageResponse"
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessOfTenantUsageResponse"
+            text/json:
+              schema:
+                $ref: "#/components/schemas/SuccessOfTenantUsageResponse"
+        "401":
+          description: Missing, invalid or expired access token.
+        "403":
+          description: The caller lacks the required tenant or role.
   /api/tenancy/theme:
     get:
       tags:
@@ -1093,13 +1149,13 @@ paths:
           content:
             text/plain:
               schema:
-                $ref: "#/components/schemas/SuccessOfTenantThemeResponse"
+                $ref: "#/components/schemas/SuccessOfTenantBrandingResponse"
             application/json:
               schema:
-                $ref: "#/components/schemas/SuccessOfTenantThemeResponse"
+                $ref: "#/components/schemas/SuccessOfTenantBrandingResponse"
             text/json:
               schema:
-                $ref: "#/components/schemas/SuccessOfTenantThemeResponse"
+                $ref: "#/components/schemas/SuccessOfTenantBrandingResponse"
         "400":
           description: Bad Request
           content:
@@ -1125,6 +1181,208 @@ paths:
               schema:
                 $ref: "#/components/schemas/ProblemDetails"
       security: []
+  /api/system/tenants:
+    get:
+      tags:
+        - SystemTenants
+      description: |-
+        **Authorization** (all must pass):
+        - `SystemAdmin`: one of `systemAdmin`
+      parameters:
+        - name: Search
+          in: query
+          description: Matches tenants whose name contains this text, ignoring case, or
+            whose subdomain is exactly this text.
+          schema:
+            type: string
+        - name: Page
+          in: query
+          description: One-based page number.
+          schema:
+            pattern: ^-?(?:0|[1-9]\d*)$
+            type:
+              - integer
+              - string
+            format: int32
+        - name: PageSize
+          in: query
+          description: Number of tenants per page, at most 100.
+          schema:
+            pattern: ^-?(?:0|[1-9]\d*)$
+            type:
+              - integer
+              - string
+            format: int32
+      responses:
+        "200":
+          description: OK
+          content:
+            text/plain:
+              schema:
+                $ref: "#/components/schemas/PaginatedOfSystemTenantResponse"
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaginatedOfSystemTenantResponse"
+            text/json:
+              schema:
+                $ref: "#/components/schemas/PaginatedOfSystemTenantResponse"
+        "401":
+          description: Missing, invalid or expired access token.
+        "403":
+          description: The caller lacks the required tenant or role.
+  /api/system/tenants/{id}:
+    get:
+      tags:
+        - SystemTenants
+      description: |-
+        **Authorization** (all must pass):
+        - `SystemAdmin`: one of `systemAdmin`
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: OK
+          content:
+            text/plain:
+              schema:
+                $ref: "#/components/schemas/SuccessOfSystemTenantResponse"
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessOfSystemTenantResponse"
+            text/json:
+              schema:
+                $ref: "#/components/schemas/SuccessOfSystemTenantResponse"
+        "401":
+          description: Missing, invalid or expired access token.
+        "403":
+          description: The caller lacks the required tenant or role.
+        "404":
+          description: Not Found
+          content:
+            text/plain:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+  /api/system/tenants/{id}/subscription:
+    put:
+      tags:
+        - SystemTenants
+      description: |-
+        **Authorization** (all must pass):
+        - `SystemAdmin`: one of `systemAdmin`
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateSubscriptionRequest"
+          text/json:
+            schema:
+              $ref: "#/components/schemas/UpdateSubscriptionRequest"
+          application/*+json:
+            schema:
+              $ref: "#/components/schemas/UpdateSubscriptionRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            text/plain:
+              schema:
+                $ref: "#/components/schemas/SuccessOfSystemTenantResponse"
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessOfSystemTenantResponse"
+            text/json:
+              schema:
+                $ref: "#/components/schemas/SuccessOfSystemTenantResponse"
+        "401":
+          description: Missing, invalid or expired access token.
+        "403":
+          description: The caller lacks the required tenant or role.
+        "404":
+          description: Not Found
+          content:
+            text/plain:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+  /api/system/tenants/{id}/limits:
+    put:
+      tags:
+        - SystemTenants
+      description: |-
+        **Authorization** (all must pass):
+        - `SystemAdmin`: one of `systemAdmin`
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateLimitsRequest"
+          text/json:
+            schema:
+              $ref: "#/components/schemas/UpdateLimitsRequest"
+          application/*+json:
+            schema:
+              $ref: "#/components/schemas/UpdateLimitsRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            text/plain:
+              schema:
+                $ref: "#/components/schemas/SuccessOfSystemTenantResponse"
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessOfSystemTenantResponse"
+            text/json:
+              schema:
+                $ref: "#/components/schemas/SuccessOfSystemTenantResponse"
+        "401":
+          description: Missing, invalid or expired access token.
+        "403":
+          description: The caller lacks the required tenant or role.
+        "404":
+          description: Not Found
+          content:
+            text/plain:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
   /api/Media/images:
     post:
       tags:
@@ -1282,7 +1540,17 @@ paths:
         "401":
           description: Missing, invalid or expired access token.
         "403":
-          description: The caller lacks the required tenant or role.
+          description: The plan's user limit is reached.
+          content:
+            text/plain:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+            text/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
         "409":
           description: Phone number already registered.
           content:
@@ -2661,6 +2929,35 @@ components:
           type: string
           description: Public URL the image is served from.
       description: An uploaded image.
+    LimitOverridesResponse:
+      type: object
+      properties:
+        maxTripsPerMonth:
+          pattern: ^-?(?:0|[1-9]\d*)$
+          type:
+            - "null"
+            - integer
+            - string
+          description: Trips that may be created per billing month.
+          format: int32
+        maxActiveTrips:
+          pattern: ^-?(?:0|[1-9]\d*)$
+          type:
+            - "null"
+            - integer
+            - string
+          description: Trips that may be open for booking at the same time.
+          format: int32
+        maxUsers:
+          pattern: ^-?(?:0|[1-9]\d*)$
+          type:
+            - "null"
+            - integer
+            - string
+          description: Users in the tenant, the tenant admin included.
+          format: int32
+      description: Limits set for one tenant in place of its plan's. Null means the
+        plan's value applies.
     LoginRequest:
       required:
         - phoneNumber
@@ -2713,6 +3010,20 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/EmployeeResponse"
+        pagination:
+          $ref: "#/components/schemas/PaginationData"
+        isSuccessful:
+          type: boolean
+    PaginatedOfSystemTenantResponse:
+      required:
+        - data
+        - pagination
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/SystemTenantResponse"
         pagination:
           $ref: "#/components/schemas/PaginationData"
         isSuccessful:
@@ -2814,6 +3125,31 @@ components:
           type: string
           description: Identity password reset token.
       description: Proof of phone number ownership, spent by the reset password step.
+    PlanLimitsResponse:
+      type: object
+      properties:
+        maxTripsPerMonth:
+          pattern: ^-?(?:0|[1-9]\d*)$
+          type:
+            - integer
+            - string
+          description: Trips that may be created per billing month.
+          format: int32
+        maxActiveTrips:
+          pattern: ^-?(?:0|[1-9]\d*)$
+          type:
+            - integer
+            - string
+          description: Trips that may be open for booking at the same time.
+          format: int32
+        maxUsers:
+          pattern: ^-?(?:0|[1-9]\d*)$
+          type:
+            - integer
+            - string
+          description: Users in the tenant, the tenant admin included.
+          format: int32
+      description: Limits a tenant's plan allows.
     ProblemDetails:
       type: object
       properties:
@@ -2923,6 +3259,11 @@ components:
           type: string
           description: The replacement password. Must be at least 8 characters.
       description: Sets a new password using a password reset token.
+    SubscriptionPlan:
+      type: integer
+      description: 0 = Free (14 days), 1 = Basic (6 months), 2 = Pro (6 months) or 3 =
+        ProAnnual (1 year). The tenant's current plan, while still active, is
+        extended from its expiry; any other plan starts a new period today.
     SuccessOfAvailableTripDetailsResponse:
       required:
         - data
@@ -3039,6 +3380,28 @@ components:
             - $ref: "#/components/schemas/PasswordResetTokenResponse"
         isSuccessful:
           type: boolean
+    SuccessOfSystemTenantResponse:
+      required:
+        - data
+      type: object
+      properties:
+        data:
+          oneOf:
+            - type: "null"
+            - $ref: "#/components/schemas/SystemTenantResponse"
+        isSuccessful:
+          type: boolean
+    SuccessOfTenantBrandingResponse:
+      required:
+        - data
+      type: object
+      properties:
+        data:
+          oneOf:
+            - type: "null"
+            - $ref: "#/components/schemas/TenantBrandingResponse"
+        isSuccessful:
+          type: boolean
     SuccessOfTenantResponse:
       required:
         - data
@@ -3050,7 +3413,7 @@ components:
             - $ref: "#/components/schemas/TenantResponse"
         isSuccessful:
           type: boolean
-    SuccessOfTenantThemeResponse:
+    SuccessOfTenantUsageResponse:
       required:
         - data
       type: object
@@ -3058,7 +3421,7 @@ components:
         data:
           oneOf:
             - type: "null"
-            - $ref: "#/components/schemas/TenantThemeResponse"
+            - $ref: "#/components/schemas/TenantUsageResponse"
         isSuccessful:
           type: boolean
     SuccessOfTokenResponse:
@@ -3138,6 +3501,69 @@ components:
             - $ref: "#/components/schemas/UserResponse"
         isSuccessful:
           type: boolean
+    SystemTenantResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Identifier of the tenant.
+          format: uuid
+        name:
+          type: string
+          description: Display name of the tenant.
+        subdomain:
+          type: string
+          description: Host label the tenant is reached at.
+        plan:
+          type: string
+          description: "Current plan: Free, Basic, Pro or ProAnnual."
+        subscriptionStartedAt:
+          type:
+            - "null"
+            - string
+          description: When the current subscription started. Billing months begin on this
+            day of each month.
+          format: date-time
+        subscriptionExpiresAt:
+          type:
+            - "null"
+            - string
+          description: When the current subscription period ends.
+          format: date-time
+        hasActiveSubscription:
+          type: boolean
+          description: Whether the subscription has not yet lapsed.
+        limits:
+          description: "Limits in effect: the plan's, with the overrides applied."
+          $ref: "#/components/schemas/PlanLimitsResponse"
+        limitOverrides:
+          oneOf:
+            - type: "null"
+            - description: Tenant-specific overrides, or null when the tenant uses its plan's
+                limits.
+              $ref: "#/components/schemas/LimitOverridesResponse"
+        createdAt:
+          type: string
+          description: When the tenant was created.
+          format: date-time
+      description: "A tenant as the system admin sees it: its subscription, limits and
+        any overrides."
+    TenantBrandingResponse:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Display name of the tenant.
+        logoUrl:
+          type:
+            - "null"
+            - string
+          description: Public URL of the tenant's logo, if it has one.
+        theme:
+          description: Colours of the tenant's client site.
+          $ref: "#/components/schemas/TenantThemeResponse"
+      description: "What a tenant's client site needs to brand itself: its name, logo
+        and colours."
     TenantResponse:
       type: object
       properties:
@@ -3159,9 +3585,16 @@ components:
         theme:
           description: Colours of the tenant's client site.
           $ref: "#/components/schemas/TenantThemeResponse"
-        subscriptionType:
+        plan:
           type: string
-          description: "Current plan: Free or Pro."
+          description: "Current plan: Free, Basic, Pro or ProAnnual."
+        subscriptionStartedAt:
+          type:
+            - "null"
+            - string
+          description: When the current subscription started. Billing months begin on this
+            day of each month.
+          format: date-time
         subscriptionExpiresAt:
           type:
             - "null"
@@ -3171,6 +3604,10 @@ components:
         hasActiveSubscription:
           type: boolean
           description: Whether the subscription has not yet lapsed.
+        limits:
+          description: "Limits in effect: the plan's, with any tenant-specific overrides
+            applied."
+          $ref: "#/components/schemas/PlanLimitsResponse"
         createdAt:
           type: string
           description: When the tenant was created.
@@ -3273,6 +3710,46 @@ components:
           type: string
           description: Errors and low-seat warnings.
       description: Colours of a tenant's client site.
+    TenantUsageResponse:
+      type: object
+      properties:
+        plan:
+          type: string
+          description: "Current plan: Free, Basic, Pro or ProAnnual."
+        limits:
+          description: "Limits in effect: the plan's, with any tenant-specific overrides
+            applied."
+          $ref: "#/components/schemas/PlanLimitsResponse"
+        billingPeriodStart:
+          type: string
+          description: Start of the current billing month.
+          format: date-time
+        billingPeriodEnd:
+          type: string
+          description: End of the current billing month, when the monthly trip count resets.
+          format: date-time
+        tripsThisPeriod:
+          pattern: ^-?(?:0|[1-9]\d*)$
+          type:
+            - integer
+            - string
+          description: Trips created in the current billing month.
+          format: int32
+        activeTrips:
+          pattern: ^-?(?:0|[1-9]\d*)$
+          type:
+            - integer
+            - string
+          description: Trips currently open for booking.
+          format: int32
+        users:
+          pattern: ^-?(?:0|[1-9]\d*)$
+          type:
+            - integer
+            - string
+          description: Users in the tenant, the tenant admin included.
+          format: int32
+      description: A tenant's plan limits next to what it is currently using.
     TokenResponse:
       required:
         - accessToken
@@ -3638,6 +4115,51 @@ components:
             the seats).
           $ref: "#/components/schemas/BookingStatus"
       description: The status to move a booking to.
+    UpdateLimitsRequest:
+      required:
+        - maxTripsPerMonth
+        - maxActiveTrips
+        - maxUsers
+      type: object
+      properties:
+        maxTripsPerMonth:
+          pattern: ^-?(?:0|[1-9]\d*)$
+          type:
+            - "null"
+            - integer
+            - string
+          description: Trips that may be created per billing month.
+          format: int32
+        maxActiveTrips:
+          pattern: ^-?(?:0|[1-9]\d*)$
+          type:
+            - "null"
+            - integer
+            - string
+          description: Trips that may be open for booking at the same time.
+          format: int32
+        maxUsers:
+          pattern: ^-?(?:0|[1-9]\d*)$
+          type:
+            - "null"
+            - integer
+            - string
+          description: Users in the tenant, the tenant admin included.
+          format: int32
+      description: Tenant-specific limits that replace its plan's. A null limit uses
+        the plan's value; all null clears the overrides.
+    UpdateSubscriptionRequest:
+      required:
+        - plan
+      type: object
+      properties:
+        plan:
+          description: 0 = Free (14 days), 1 = Basic (6 months), 2 = Pro (6 months) or 3 =
+            ProAnnual (1 year). The tenant's current plan, while still active,
+            is extended from its expiry; any other plan starts a new period
+            today.
+          $ref: "#/components/schemas/SubscriptionPlan"
+      description: The plan to put a tenant on.
     UpdateTenantRequest:
       required:
         - name
@@ -3761,6 +4283,7 @@ tags:
   - name: Trips
   - name: Tenants
   - name: Theme
+  - name: SystemTenants
   - name: Media
   - name: Employees
   - name: AvailableTrips

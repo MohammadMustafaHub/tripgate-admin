@@ -1,7 +1,7 @@
 import type { AxiosError } from "axios";
 import { fail, ok, type Result } from "@/lib/result";
 import type { Tokens } from "@/models/auth";
-import type { Tenant, TenantTheme } from "@/models/tenant";
+import type { Tenant, TenantTheme, TenantUsage } from "@/models/tenant";
 import client from "./client";
 import type { SuccessResponse } from "./responses";
 
@@ -37,6 +37,17 @@ export async function getCurrentTenant(): Promise<Result<Tenant, GetCurrentTenan
   } catch (error) {
     const status = (error as AxiosError)?.response?.status;
     if (status === 404) return fail("NO_TENANT");
+    return fail("UNKNOWN_ERROR");
+  }
+}
+
+export type GetTenantUsageError = "UNKNOWN_ERROR";
+
+export async function getTenantUsage(): Promise<Result<TenantUsage, GetTenantUsageError>> {
+  try {
+    const response = await client.get<SuccessResponse<TenantUsage>>("/tenancy/Tenants/current/usage");
+    return ok(response.data.data);
+  } catch {
     return fail("UNKNOWN_ERROR");
   }
 }

@@ -2,15 +2,19 @@ import { Link } from "react-router";
 import { useQuery } from "@tanstack/react-query";
 import { BadgeCheckIcon, CalendarClockIcon, CalendarPlusIcon, ExternalLinkIcon, PencilIcon } from "lucide-react";
 import { getCurrentTenant } from "@/api/tenants";
+import { DetailItem } from "@/components/detail-item";
 import { RemoteImage } from "@/components/remote-image";
+import { PlanUsage } from "@/components/tenant/plan-usage";
 import { ThemePreview } from "@/components/tenant/theme-preview";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyTitle } from "@/components/ui/empty";
 import { Skeleton } from "@/components/ui/skeleton";
 import { usePermission } from "@/hooks/use-permission";
+import { useTenantUsage } from "@/hooks/use-tenant-usage";
 import { formatDate } from "@/lib/format";
 import { Permission } from "@/lib/permissions";
+import { formatPlan } from "@/lib/plan";
 import { tenantHost, tenantUrl } from "@/lib/tenant-url";
 import { THEME_COLORS, withDefaults } from "@/lib/tenant-theme";
 import type { Tenant } from "@/models/tenant";
@@ -44,6 +48,7 @@ export default function TenantViewPage() {
 
 function TenantDetails({ tenant }: { tenant: Tenant }) {
   const canManage = usePermission(Permission.ManageTenant);
+  const usageQuery = useTenantUsage();
   const theme = withDefaults(tenant.theme);
 
   return (
@@ -76,19 +81,21 @@ function TenantDetails({ tenant }: { tenant: Tenant }) {
       </div>
 
       <dl className="grid gap-px overflow-hidden rounded-xl border bg-border sm:grid-cols-3">
-        <Detail icon={BadgeCheckIcon} label="خطة الاشتراك">
-          {tenant.subscriptionType === "Pro" ? "احترافية" : "مجانية"}
+        <DetailItem icon={BadgeCheckIcon} label="خطة الاشتراك">
+          {formatPlan(tenant.plan)}
           <Badge variant={tenant.hasActiveSubscription ? "secondary" : "destructive"}>
             {tenant.hasActiveSubscription ? "فعّال" : "منتهٍ"}
           </Badge>
-        </Detail>
-        <Detail icon={CalendarClockIcon} label="ينتهي الاشتراك في">
+        </DetailItem>
+        <DetailItem icon={CalendarClockIcon} label="ينتهي الاشتراك في">
           {tenant.subscriptionExpiresAt ? formatDate(tenant.subscriptionExpiresAt) : "—"}
-        </Detail>
-        <Detail icon={CalendarPlusIcon} label="تاريخ الإنشاء">
+        </DetailItem>
+        <DetailItem icon={CalendarPlusIcon} label="تاريخ الإنشاء">
           {formatDate(tenant.createdAt)}
-        </Detail>
+        </DetailItem>
       </dl>
+
+      <PlanUsage usage={usageQuery.data} loading={usageQuery.isPending} />
 
       <section className="flex flex-col gap-4">
         <div className="flex flex-col gap-1">
@@ -115,28 +122,6 @@ function TenantDetails({ tenant }: { tenant: Tenant }) {
           <ThemePreview theme={theme} name={tenant.name} logoUrl={tenant.logoUrl} />
         </div>
       </section>
-    </div>
-  );
-}
-
-function Detail({
-  icon: Icon,
-  label,
-  children,
-}: {
-  icon: React.ComponentType<{ className?: string }>;
-  label: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <div className="flex items-center gap-3 bg-card p-4">
-      <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground">
-        <Icon className="size-5" />
-      </span>
-      <div className="flex min-w-0 flex-col gap-0.5">
-        <dt className="text-xs text-muted-foreground">{label}</dt>
-        <dd className="flex items-center gap-2 text-sm font-semibold">{children}</dd>
-      </div>
     </div>
   );
 }

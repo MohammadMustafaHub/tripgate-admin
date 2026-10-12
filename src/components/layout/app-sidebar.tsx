@@ -94,7 +94,7 @@ function NavEntry({ item }: { item: NavItem }) {
     <SidebarMenuItem>
       <SidebarMenuButton
         className={NAV_BUTTON_CLASS}
-        isActive={pathname === item.to}
+        isActive={isNavActive(pathname, item.to!)}
         tooltip={{ children: item.title, side: TOOLTIP_SIDE }}
         render={<NavLink to={item.to!} end />}
       >

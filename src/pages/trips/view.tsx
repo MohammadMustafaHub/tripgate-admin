@@ -23,6 +23,7 @@ import {
 import { UNKNOWN_ERROR_MESSAGE } from "@/components/form/form-error";
 import { RemoteImage } from "@/components/remote-image";
 import { StatTile, StatTiles } from "@/components/stat-tile";
+import { LimitAlert } from "@/components/tenant/plan-usage";
 import { TripBookings } from "@/components/trips/trip-bookings";
 import { TripStatus } from "@/components/trips/trip-status";
 import {
@@ -41,9 +42,11 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Spinner } from "@/components/ui/spinner";
 import { toast } from "@/components/ui/toast";
 import { usePermission } from "@/hooks/use-permission";
+import { TENANT_USAGE_KEY, useTenantUsage } from "@/hooks/use-tenant-usage";
 import { dateParts, formatNumber, formatPrice, formatShortDate } from "@/lib/format";
 import { imageUrl } from "@/lib/images";
 import { Permission } from "@/lib/permissions";
+import { activeTripLimitMessage, isActiveTripLimitReached } from "@/lib/plan";
 import type { TripDetails } from "@/models/trip";
 
 const DELETE_ERRORS: Record<DeleteTripError, string> = {
@@ -55,6 +58,7 @@ const DELETE_ERRORS: Record<DeleteTripError, string> = {
 const ACTIVE_ERRORS: Record<SetTripActiveError, string> = {
   NOT_FOUND: "لم تعد هذه الرحلة موجودة.",
   TRIP_CHANGED: "عُدّلت الرحلة أثناء التحديث. حدّث الصفحة وحاول مجدداً.",
+  ACTIVE_LIMIT_REACHED: "بلغت حد خطة الاشتراك للرحلات المفتوحة للحجز. أوقف رحلة أخرى أولاً.",
   UNKNOWN_ERROR: UNKNOWN_ERROR_MESSAGE,
 };
 
@@ -110,10 +114,12 @@ function TripDetailsView({ trip }: { trip: TripDetails }) {
       if (!result.ok) {
         toast.add({ type: "error", title: ACTIVE_ERRORS[result.error] });
         if (result.error === "TRIP_CHANGED") void queryClient.invalidateQueries({ queryKey: ["trips"] });
+        if (result.error === "ACTIVE_LIMIT_REACHED") void queryClient.invalidateQueries({ queryKey: TENANT_USAGE_KEY });
         return;
       }
       // The response has no bookings, so refetch the details rather than caching it.
       void queryClient.invalidateQueries({ queryKey: ["trips"] });
+      void queryClient.invalidateQueries({ queryKey: TENANT_USAGE_KEY });
       toast.add({ type: "success", title: result.value.isActive ? "تم تفعيل الرحلة." : "تم إيقاف الرحلة." });
     },
   });
@@ -126,12 +132,17 @@ function TripDetailsView({ trip }: { trip: TripDetails }) {
         return;
       }
       void queryClient.invalidateQueries({ queryKey: ["trips"] });
+      void queryClient.invalidateQueries({ queryKey: TENANT_USAGE_KEY });
       toast.add({ type: "success", title: "تم حذف الرحلة." });
       navigate("/trips", { replace: true });
     },
   });
 
   const canManage = usePermission(Permission.ManageTrips);
+  const { data: usage } = useTenantUsage();
+  // Only a trip whose registration is still open counts towards the active trip limit.
+  const activateBlocked =
+    !trip.isActive && new Date(trip.finalRegistrationDate) > new Date() && !!usage && isActiveTripLimitReached(usage);
   const takeoff = dateParts(trip.takeoffDate);
   const closes = dateParts(trip.finalRegistrationDate);
 
@@ -152,7 +163,8 @@ function TripDetailsView({ trip }: { trip: TripDetails }) {
           <>
             <Button
               variant="outline"
-              disabled={toggleActive.isPending}
+              disabled={toggleActive.isPending || activateBlocked}
+              title={activateBlocked && usage ? activeTripLimitMessage(usage) : undefined}
               onClick={() => toggleActive.mutate({ id: trip.id })}
             >
               {toggleActive.isPending ? <Spinner /> : trip.isActive ? <PauseIcon /> : <PlayIcon />}
@@ -192,6 +204,8 @@ function TripDetailsView({ trip }: { trip: TripDetails }) {
           </>
         )}
       </div>
+
+      {canManage && <LimitAlert message={activateBlocked && usage ? activeTripLimitMessage(usage) : null} />}
 
       <div className="grid gap-4 lg:grid-cols-2">
         <div className="relative">

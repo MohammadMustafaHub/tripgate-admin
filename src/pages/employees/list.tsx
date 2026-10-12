@@ -5,6 +5,7 @@ import { InboxIcon, Trash2Icon, UserPlusIcon } from "lucide-react";
 import { listEmployees, removeEmployee, type RemoveEmployeeError } from "@/api/employees";
 import { UNKNOWN_ERROR_MESSAGE } from "@/components/form/form-error";
 import { ListPagination } from "@/components/list-pagination";
+import { LimitAlert, UsageCount } from "@/components/tenant/plan-usage";
 import {
   AlertDialog,
   AlertDialogCancel,
@@ -21,9 +22,11 @@ import { Spinner } from "@/components/ui/spinner";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { toast } from "@/components/ui/toast";
 import { usePermission } from "@/hooks/use-permission";
+import { TENANT_USAGE_KEY, useTenantUsage } from "@/hooks/use-tenant-usage";
 import { formatNumber } from "@/lib/format";
 import { Permission, Role, formatRole } from "@/lib/permissions";
 import { formatPhoneNumber } from "@/lib/phone";
+import { userLimitMessage } from "@/lib/plan";
 import type { Employee } from "@/models/employee";
 import { useUserStore } from "@/stores/user-store";
 
@@ -64,10 +67,13 @@ export default function EmployeesListPage() {
         return;
       }
       void queryClient.invalidateQueries({ queryKey: ["employees"] });
+      void queryClient.invalidateQueries({ queryKey: TENANT_USAGE_KEY });
       toast.add({ type: "success", title: "تمت إزالة الموظف." });
     },
   });
   const pagination = result?.ok ? result.value.pagination : undefined;
+  const { data: usage } = useTenantUsage();
+  const limitMessage = usage ? userLimitMessage(usage) : null;
 
   const goToPage = (next: number) => {
     setSearchParams(next === 1 ? {} : { page: String(next) });
@@ -85,11 +91,23 @@ export default function EmployeesListPage() {
             <span className="text-sm text-muted-foreground">إجمالي الموظفين</span>
           </p>
         )}
-        <Button render={<Link to="/settings/employees/new" />} nativeButton={false}>
-          <UserPlusIcon />
-          إضافة موظف
-        </Button>
+        <div className="flex flex-wrap items-center gap-3">
+          {usage && <UsageCount used={usage.users} max={usage.limits.maxUsers} label="مستخدم في خطتك" />}
+          {limitMessage ? (
+            <Button disabled>
+              <UserPlusIcon />
+              إضافة موظف
+            </Button>
+          ) : (
+            <Button render={<Link to="/settings/employees/new" />} nativeButton={false}>
+              <UserPlusIcon />
+              إضافة موظف
+            </Button>
+          )}
+        </div>
       </div>
+
+      <LimitAlert message={limitMessage} />
 
       {result && !result.ok ? (
         <p className="border border-destructive/40 bg-destructive/5 px-4 py-3 text-sm text-destructive">

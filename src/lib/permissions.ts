@@ -7,6 +7,8 @@ export const Role = {
   BookingsViewer: "bookingsViewer",
   BookingsManager: "bookingsManager",
   StatisticsViewer: "statisticsViewer",
+  /** Runs the platform rather than a tenant; sees only the system pages. */
+  SystemAdmin: "systemAdmin",
 } as const;
 
 export type Role = (typeof Role)[keyof typeof Role];
@@ -38,6 +40,10 @@ const PERMISSION_ROLES: Record<Permission, Role[]> = {
   ManageTenant: [Role.TenantAdmin],
 };
 
+export function isSystemAdmin(roles: readonly string[]): boolean {
+  return roles.includes(Role.SystemAdmin);
+}
+
 export function hasPermission(roles: readonly string[], permission: Permission): boolean {
   return PERMISSION_ROLES[permission].some((role) => roles.includes(role));
 }
@@ -50,12 +56,14 @@ export const ROLE_LABELS: Record<Role, string> = {
   bookingsViewer: "عرض الحجوزات",
   bookingsManager: "إدارة الحجوزات",
   statisticsViewer: "عرض التحليلات",
+  systemAdmin: "مدير النظام",
 };
 
 export const formatRole = (role: string) => ROLE_LABELS[role as Role] ?? role;
 
 /** A short title for the user's position, for places that show a single label. */
 export function formatRoleTitle(roles: readonly string[]): string {
+  if (roles.includes(Role.SystemAdmin)) return ROLE_LABELS.systemAdmin;
   if (roles.includes(Role.TenantAdmin)) return ROLE_LABELS.tenantAdmin;
   if (roles.includes(Role.Admin)) return ROLE_LABELS.admin;
   return "موظف";

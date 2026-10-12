@@ -13,8 +13,9 @@ import BookingsListPage from "@/pages/bookings/list";
 import DashboardView from "@/pages/dashboard/view";
 import EmployeeCreatePage from "@/pages/employees/create";
 import EmployeesListPage from "@/pages/employees/list";
-import PlaceholderPage from "@/pages/placeholder";
 import TenantEditPage from "@/pages/tenant/edit";
+import SystemTenantsListPage from "@/pages/system/tenants/list";
+import SystemTenantViewPage from "@/pages/system/tenants/view";
 import TenantViewPage from "@/pages/tenant/view";
 import TripProgramCreatePage from "@/pages/trip-programs/create";
 import TripProgramEditPage from "@/pages/trip-programs/edit";
@@ -85,7 +86,16 @@ export default function App() {
                   <Route path="edit" element={<TenantEditPage />} />
                 </Route>
               </Route>
-              <Route path="settings/account" element={<PlaceholderPage />} />
+            </Route>
+          </Route>
+
+          {/* System admins see only these pages; every other page sends them here. */}
+          <Route element={<AuthGuard step="system" />}>
+            <Route element={<DashboardLayout />}>
+              <Route path="tenants">
+                <Route index element={<SystemTenantsListPage />} />
+                <Route path=":id" element={<SystemTenantViewPage />} />
+              </Route>
             </Route>
           </Route>
 

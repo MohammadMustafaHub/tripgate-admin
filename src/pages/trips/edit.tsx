@@ -7,11 +7,14 @@ import { Button } from "@/components/ui/button";
 import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyTitle } from "@/components/ui/empty";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "@/components/ui/toast";
+import { TENANT_USAGE_KEY } from "@/hooks/use-tenant-usage";
 
 const ERROR_MESSAGES: Record<UpdateTripError, string> = {
   NOT_FOUND: "لم تعد هذه الرحلة موجودة، ربما حُذفت.",
   CONFLICT:
     "تعذّر الحفظ: إما أن عدد المقاعد أقل من المقاعد المحجوزة حالياً، أو أن الرحلة عُدّلت أثناء الحفظ. حدّث الصفحة وحاول مجدداً.",
+  ACTIVE_LIMIT_REACHED:
+    "تعذّر الحفظ: تمديد موعد التسجيل يجعل الرحلة مفتوحة للحجز، وقد بلغت حد خطة الاشتراك للرحلات المفتوحة للحجز. أوقف رحلة أخرى أولاً.",
   UNKNOWN_ERROR: UNKNOWN_ERROR_MESSAGE,
 };
 
@@ -30,6 +33,7 @@ export default function TripEditPage() {
     onSuccess: (updated) => {
       if (!updated.ok) return;
       void queryClient.invalidateQueries({ queryKey: ["trips"] });
+      void queryClient.invalidateQueries({ queryKey: TENANT_USAGE_KEY });
       toast.add({ type: "success", title: "تم حفظ التعديلات بنجاح." });
       navigate(`/trips/${id}`, { replace: true });
     },

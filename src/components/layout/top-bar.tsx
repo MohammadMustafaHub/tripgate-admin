@@ -11,12 +11,16 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { findNavTrail } from "@/layouts/navigation";
+import { isSystemAdmin } from "@/lib/permissions";
+import { useUserStore } from "@/stores/user-store";
 import { AppMenu } from "./app-menu";
 import { NotificationsMenu } from "./notifications-menu";
 
 export function TopBar() {
   const { pathname } = useLocation();
   const trail = findNavTrail(pathname);
+  // System admins have no tenant of their own, so there is no site to share.
+  const systemAdmin = useUserStore((state) => isSystemAdmin(state.user?.roles ?? []));
 
   return (
     <header className="flex h-14 shrink-0 items-center gap-2 px-4 md:px-6">
@@ -46,7 +50,7 @@ export function TopBar() {
 
       <div className="ms-auto flex items-center gap-1">
         <NotificationsMenu />
-        <AppMenu />
+        {!systemAdmin && <AppMenu />}
       </div>
     </header>
   );

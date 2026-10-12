@@ -24,8 +24,8 @@ export async function listEmployees({
   }
 }
 
-/** PHONE_TAKEN: the phone number is already registered. */
-export type CreateEmployeeError = "INVALID_EMPLOYEE" | "PHONE_TAKEN" | "UNKNOWN_ERROR";
+/** PHONE_TAKEN: the phone number is already registered. LIMIT_REACHED: the plan's user limit is reached. */
+export type CreateEmployeeError = "INVALID_EMPLOYEE" | "PHONE_TAKEN" | "LIMIT_REACHED" | "UNKNOWN_ERROR";
 
 export async function createEmployee(employee: {
   /** Iraqi phone number in the format 9647XXXXXXXXX; also the employee's login. */
@@ -40,6 +40,7 @@ export async function createEmployee(employee: {
   } catch (error) {
     const status = (error as AxiosError)?.response?.status;
     if (status === 400) return fail("INVALID_EMPLOYEE");
+    if (status === 403) return fail("LIMIT_REACHED");
     if (status === 409) return fail("PHONE_TAKEN");
     return fail("UNKNOWN_ERROR");
   }

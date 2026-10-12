@@ -40,7 +40,8 @@ export async function getTrip({ id }: { id: string }): Promise<Result<TripDetail
   }
 }
 
-export type CreateTripError = "PROGRAM_NOT_FOUND" | "UNKNOWN_ERROR";
+/** LIMIT_REACHED: the plan's monthly trip or active trip limit is reached. */
+export type CreateTripError = "PROGRAM_NOT_FOUND" | "LIMIT_REACHED" | "UNKNOWN_ERROR";
 
 export async function createTrip(trip: {
   tripProgramId: string;
@@ -58,13 +59,17 @@ export async function createTrip(trip: {
     return ok(response.data.data);
   } catch (error) {
     const status = (error as AxiosError)?.response?.status;
+    if (status === 403) return fail("LIMIT_REACHED");
     if (status === 404) return fail("PROGRAM_NOT_FOUND");
     return fail("UNKNOWN_ERROR");
   }
 }
 
-/** CONFLICT: the new seat count is below the seats already reserved, or the trip changed while updating. */
-export type UpdateTripError = "NOT_FOUND" | "CONFLICT" | "UNKNOWN_ERROR";
+/**
+ * CONFLICT: the new seat count is below the seats already reserved, or the trip changed while updating.
+ * ACTIVE_LIMIT_REACHED: moving registration back into the future would go over the plan's active trip limit.
+ */
+export type UpdateTripError = "NOT_FOUND" | "CONFLICT" | "ACTIVE_LIMIT_REACHED" | "UNKNOWN_ERROR";
 
 export async function updateTrip({
   id,
@@ -82,6 +87,7 @@ export async function updateTrip({
     return ok(response.data.data);
   } catch (error) {
     const status = (error as AxiosError)?.response?.status;
+    if (status === 403) return fail("ACTIVE_LIMIT_REACHED");
     if (status === 404) return fail("NOT_FOUND");
     if (status === 409) return fail("CONFLICT");
     return fail("UNKNOWN_ERROR");
@@ -103,8 +109,11 @@ export async function deleteTrip({ id }: { id: string }): Promise<Result<void, D
   }
 }
 
-/** TRIP_CHANGED: the trip changed while updating. */
-export type SetTripActiveError = "NOT_FOUND" | "TRIP_CHANGED" | "UNKNOWN_ERROR";
+/**
+ * TRIP_CHANGED: the trip changed while updating.
+ * ACTIVE_LIMIT_REACHED: the plan's active trip limit is reached (activation only).
+ */
+export type SetTripActiveError = "NOT_FOUND" | "TRIP_CHANGED" | "ACTIVE_LIMIT_REACHED" | "UNKNOWN_ERROR";
 
 export async function activateTrip({ id }: { id: string }): Promise<Result<Trip, SetTripActiveError>> {
   try {
@@ -112,6 +121,7 @@ export async function activateTrip({ id }: { id: string }): Promise<Result<Trip,
     return ok(response.data.data);
   } catch (error) {
     const status = (error as AxiosError)?.response?.status;
+    if (status === 403) return fail("ACTIVE_LIMIT_REACHED");
     if (status === 404) return fail("NOT_FOUND");
     if (status === 409) return fail("TRIP_CHANGED");
     return fail("UNKNOWN_ERROR");

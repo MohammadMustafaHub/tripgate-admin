@@ -3,14 +3,16 @@ import { onSessionExpired } from "@/api/client";
 import { revokeToken } from "@/api/tokens";
 import { tokenStorage } from "@/api/tokens-storage";
 import { getCurrentUser } from "@/api/user";
+import { isSystemAdmin } from "@/lib/permissions";
 import { queryClient } from "@/lib/query-client";
 import type { Tokens } from "@/models/auth";
 import type { User } from "@/models/user";
 
 type SessionStatus = "idle" | "loading" | "ready" | "error";
 
-// Where the user is in the onboarding flow, in order.
-export type AuthStep = "login" | "verify" | "tenant" | "ready";
+// Where the user is in the onboarding flow, in order. System admins skip the tenant step
+// and land on "system", which only opens the system pages.
+export type AuthStep = "login" | "verify" | "tenant" | "ready" | "system";
 
 interface UserState {
   user: User | null;
@@ -67,6 +69,7 @@ onSessionExpired(() => {
 export function getAuthStep(user: User | null): AuthStep {
   if (!user) return "login";
   if (!user.phoneNumberConfirmed) return "verify";
+  if (isSystemAdmin(user.roles)) return "system";
   if (!user.tenantId) return "tenant";
   return "ready";
 }

@@ -5,13 +5,16 @@ import { getTripProgram } from "@/api/trip-programs";
 import { listTrips } from "@/api/trips";
 import { ListPagination } from "@/components/list-pagination";
 import { SegmentedTabs } from "@/components/segmented-tabs";
+import { LimitAlert, UsageCount } from "@/components/tenant/plan-usage";
 import { TripCard, TripCardSkeleton } from "@/components/trips/trip-card";
 import { Button } from "@/components/ui/button";
 import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty";
 import { Skeleton } from "@/components/ui/skeleton";
 import { usePermission } from "@/hooks/use-permission";
+import { useTenantUsage } from "@/hooks/use-tenant-usage";
 import { formatNumber } from "@/lib/format";
 import { Permission } from "@/lib/permissions";
+import { tripLimitMessage } from "@/lib/plan";
 
 const PAGE_SIZE = 12;
 
@@ -69,15 +72,24 @@ export default function TripsListPage() {
   };
 
   const canManage = usePermission(Permission.ManageTrips);
-  const addButton = canManage && (
-    <Button
-      render={<Link to={programId ? `/trips/new?program=${programId}` : "/trips/new"} />}
-      nativeButton={false}
-    >
-      <CalendarPlusIcon />
-      جدولة رحلة
-    </Button>
-  );
+  const { data: usage } = useTenantUsage();
+  const limitMessage = usage ? tripLimitMessage(usage) : null;
+  const addButton =
+    canManage &&
+    (limitMessage ? (
+      <Button disabled>
+        <CalendarPlusIcon />
+        جدولة رحلة
+      </Button>
+    ) : (
+      <Button
+        render={<Link to={programId ? `/trips/new?program=${programId}` : "/trips/new"} />}
+        nativeButton={false}
+      >
+        <CalendarPlusIcon />
+        جدولة رحلة
+      </Button>
+    ));
 
   if (result && !result.ok) {
     return (
@@ -112,8 +124,22 @@ export default function TripsListPage() {
             </span>
           </p>
         )}
-        {addButton}
+        <div className="flex flex-wrap items-center gap-3">
+          {usage && (
+            <>
+              <UsageCount
+                used={usage.tripsThisPeriod}
+                max={usage.limits.maxTripsPerMonth}
+                label="رحلة هذا الشهر"
+              />
+              <UsageCount used={usage.activeTrips} max={usage.limits.maxActiveTrips} label="مفتوحة للحجز" />
+            </>
+          )}
+          {addButton}
+        </div>
       </div>
+
+      {canManage && <LimitAlert message={limitMessage} />}
 
       <div className="flex flex-wrap items-center gap-3">
         <SegmentedTabs

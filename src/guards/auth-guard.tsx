@@ -12,6 +12,7 @@ const STEP_PATHS: Record<AuthStep, string> = {
   verify: "/verify",
   tenant: "/create-tenant",
   ready: "/",
+  system: "/tenants",
 };
 
 /** Loads the current user once and holds rendering until it is known. */

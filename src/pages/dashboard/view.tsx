@@ -4,6 +4,7 @@ import { listTripPrograms } from "@/api/trip-programs";
 import { Stat, StatBand } from "@/components/stat-band";
 import { useCurrentTenant } from "@/hooks/use-current-tenant";
 import { formatDate, formatNumber } from "@/lib/format";
+import { formatPlan } from "@/lib/plan";
 import type { Tenant } from "@/models/tenant";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -36,7 +37,7 @@ export default function DashboardView() {
       <Stat
         icon={BadgeCheckIcon}
         label="خطة الاشتراك"
-        value={tenant ? (tenant.subscriptionType === "Pro" ? "احترافية" : "مجانية") : null}
+        value={tenant ? formatPlan(tenant.plan) : null}
         caption={tenant ? (tenant.hasActiveSubscription ? "الاشتراك فعّال" : "الاشتراك منتهٍ") : undefined}
         loading={tenantQuery.isPending}
       />
